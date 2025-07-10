@@ -38,7 +38,7 @@ public class AdminHotelController {
     }
 
     @PatchMapping("/{hotelId}/activation")
-    public ResponseEntity<ApiResponse<Void>> updateHotelActivation(
+    public ResponseEntity<ApiResponse<Void>> updateHotelActivationById(
             @PathVariable UUID hotelId, @RequestParam boolean active) {
 
         log.info("Attempting to update hotel activation with id: {}", hotelId);

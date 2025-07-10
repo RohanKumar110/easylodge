@@ -31,7 +31,7 @@ public class HotelServiceImpl implements HotelService {
 
         Hotel savedHotel = hotelRepository.save(hotelToSave);
 
-        log.info("Hotel created successfully with Id: {}", savedHotel.getId());
+        log.info("Hotel created successfully with id: {}", savedHotel.getId());
 
         return HotelMapper.toResponse(savedHotel);
     }
@@ -44,7 +44,7 @@ public class HotelServiceImpl implements HotelService {
         Hotel fetchedHotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        log.info("Hotel fetched successfully with Id: {}", fetchedHotel.getId());
+        log.info("Hotel fetched successfully with id: {}", fetchedHotel.getId());
         return HotelMapper.toResponse(fetchedHotel);
     }
 
@@ -60,7 +60,7 @@ public class HotelServiceImpl implements HotelService {
 
         hotelRepository.save(existingHotel);
 
-        log.info("Hotel activation updated successfully with Id: {}", existingHotel.getId());
+        log.info("Hotel activation updated successfully with id: {}", existingHotel.getId());
 
         // Todo: Create Inventory for all the rooms for this hotel
 
