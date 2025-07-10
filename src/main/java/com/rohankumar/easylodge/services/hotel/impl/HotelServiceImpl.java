@@ -49,6 +49,25 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    public boolean updateHotelActivation(UUID id, boolean active) {
+
+        log.info("Updating the hotel with id: {} activation to {}", id, active);
+
+        Hotel existingHotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
+
+        existingHotel.setActive(active);
+
+        hotelRepository.save(existingHotel);
+
+        log.info("Hotel activation updated successfully with Id: {}", existingHotel.getId());
+
+        // Todo: Create Inventory for all the rooms for this hotel
+
+        return true;
+    }
+
+    @Override
     public HotelResponse updateHotelById(UUID id, HotelRequest hotelRequest) {
 
         log.info("Updating the hotel with Id: {}", id);
@@ -80,7 +99,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public Boolean deleteHotelById(UUID id) {
+    public boolean deleteHotelById(UUID id) {
 
         log.info("Deleting the hotel with id: {}", id);
 

@@ -37,6 +37,16 @@ public class AdminHotelController {
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Fetched Successfully", hotelResponse));
     }
 
+    @PatchMapping("/{hotelId}/activation")
+    public ResponseEntity<ApiResponse<Void>> updateHotelActivation(
+            @PathVariable UUID hotelId, @RequestParam boolean active) {
+
+        log.info("Attempting to update hotel activation with id: {}", hotelId);
+        hotelService.updateHotelActivation(hotelId, active);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Hotel Activation Updated Successfully"));
+    }
+
     @PutMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<HotelResponse>> updateHotelById(
             @PathVariable UUID hotelId, @RequestBody HotelRequest hotelRequest) {

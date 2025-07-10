@@ -11,7 +11,9 @@ public interface HotelService {
 
     HotelResponse getHotelById(UUID id);
 
+    boolean updateHotelActivation(UUID id, boolean active);
+
     HotelResponse updateHotelById(UUID id, HotelRequest hotelRequest);
 
-    Boolean deleteHotelById(UUID id);
+    boolean deleteHotelById(UUID id);
 }

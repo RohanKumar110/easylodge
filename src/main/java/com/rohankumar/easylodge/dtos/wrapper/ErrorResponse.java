@@ -16,6 +16,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ErrorResponse {
 
+    private Boolean success;
     private Integer status;
     private String message;
     private LocalDateTime timestamp;
@@ -29,6 +30,7 @@ public class ErrorResponse {
                 .getRequestAttributes())).getRequest();
 
         return ErrorResponse.builder()
+                .success(false)
                 .status(status)
                 .message(message)
                 .path(request.getRequestURI())
@@ -43,6 +45,7 @@ public class ErrorResponse {
                 .getRequestAttributes())).getRequest();
 
         return ErrorResponse.builder()
+                .success(false)
                 .status(status)
                 .message(message)
                 .errors(errors)
