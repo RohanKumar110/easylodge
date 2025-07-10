@@ -2,10 +2,13 @@ package com.rohankumar.easylodge.entities.hotel;
 
 import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.common.DateAudit;
+import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.entities.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,4 +43,7 @@ public class Hotel extends DateAudit {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User owner;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Room> rooms;
 }
