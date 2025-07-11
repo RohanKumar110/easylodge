@@ -59,21 +59,21 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Updating the hotel with id: {} activation to {}", id, active);
 
-        Hotel existingHotel = hotelRepository.findHotelWithRoomsById(id)
+        Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        existingHotel.setActive(active);
+        fetchedHotel.setActive(active);
 
-        hotelRepository.save(existingHotel);
+        hotelRepository.save(fetchedHotel);
 
-        log.info("Hotel activation updated successfully with id: {}", existingHotel.getId());
+        log.info("Hotel activation updated successfully with id: {}", fetchedHotel.getId());
 
-        if(existingHotel.getActive()) {
+        if(fetchedHotel.getActive()) {
 
-            List<Room> rooms = existingHotel.getRooms();
+            List<Room> rooms = fetchedHotel.getRooms();
 
             if (rooms.isEmpty()) {
-                log.info("No rooms available for hotel with id: {}. No inventory created.", existingHotel.getId());
+                log.info("No rooms available for hotel with id: {}. No inventory created.", fetchedHotel.getId());
             } else {
                 rooms.forEach(inventoryService::initializeRoomInventoriesForYear);
             }
@@ -119,13 +119,14 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Deleting the hotel with id: {}", id);
 
-        Hotel existingHotel = hotelRepository.findHotelWithRoomsById(id)
+        Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        existingHotel.getRooms()
+        fetchedHotel.getRooms()
                         .forEach(inventoryService::deleteFutureRoomInventories);
 
-        hotelRepository.deleteById(id);
+        fetchedHotel.setDeleted(true);
+        hotelRepository.save(fetchedHotel);
 
         log.info("Hotel deleted successfully with Id: {}", id);
 

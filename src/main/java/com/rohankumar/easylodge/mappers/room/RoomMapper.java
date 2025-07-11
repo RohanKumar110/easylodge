@@ -17,6 +17,7 @@ public class RoomMapper {
                 .amenities(request.getAmenities())
                 .totalRoomsCount(request.getTotalRoomsCount())
                 .capacity(request.getCapacity())
+                .deleted(Boolean.FALSE)
                 .build();
     }
 

@@ -24,6 +24,7 @@ public class HotelMapper {
                 .images(request.getImages())
                 .amenities(request.getAmenities())
                 .contactInfo(contact)
+                .deleted(Boolean.FALSE)
                 .build();
     }
 

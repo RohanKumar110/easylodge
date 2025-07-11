@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -90,7 +89,8 @@ public class RoomServiceImpl implements RoomService {
 
         inventoryService.deleteFutureRoomInventories(fetchedRoom);
 
-        roomRepository.delete(fetchedRoom);
+        fetchedRoom.setDeleted(true);
+        roomRepository.save(fetchedRoom);
 
         log.info("Room deleted successfully with id: {}", id);
 

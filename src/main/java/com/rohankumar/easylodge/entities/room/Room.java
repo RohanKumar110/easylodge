@@ -43,4 +43,7 @@ public class Room extends DateAudit {
 
     @Column(nullable = false)
     private Integer capacity;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean deleted = Boolean.FALSE;
 }

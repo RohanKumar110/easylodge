@@ -29,7 +29,7 @@ public class Hotel extends DateAudit {
     private String name;
 
     @Column(nullable = false)
-    private Boolean active;
+    private Boolean active = Boolean.FALSE;
 
     @Column(name = "images", columnDefinition = "TEXT[]")
     private String[] images;
@@ -46,4 +46,7 @@ public class Hotel extends DateAudit {
 
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Room> rooms;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean deleted = Boolean.FALSE;
 }
