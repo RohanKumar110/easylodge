@@ -5,6 +5,7 @@ import com.rohankumar.easylodge.entities.hotel.Hotel;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "rooms")
 @SQLDelete(sql = "UPDATE rooms SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 public class Room extends DateAudit {
 
     @Id
