@@ -89,8 +89,7 @@ public class RoomServiceImpl implements RoomService {
 
         inventoryService.deleteFutureRoomInventories(fetchedRoom);
 
-        fetchedRoom.setDeleted(true);
-        roomRepository.save(fetchedRoom);
+        roomRepository.delete(fetchedRoom);
 
         log.info("Room deleted successfully with id: {}", id);
 
