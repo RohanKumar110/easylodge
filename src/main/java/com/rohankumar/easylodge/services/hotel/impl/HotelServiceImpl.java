@@ -122,14 +122,9 @@ public class HotelServiceImpl implements HotelService {
         Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        fetchedHotel.getRooms().forEach(room -> {
+        fetchedHotel.getRooms().forEach(inventoryService::deleteFutureRoomInventories);
 
-            room.setDeleted(true);
-            inventoryService.deleteFutureRoomInventories(room);
-        });
-
-        fetchedHotel.setDeleted(true);
-        hotelRepository.save(fetchedHotel);
+        hotelRepository.delete(fetchedHotel);
 
         log.info("Hotel deleted successfully with Id: {}", id);
 
