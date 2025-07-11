@@ -8,10 +8,13 @@ import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.room.RoomMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.repositories.room.RoomRepository;
+import com.rohankumar.easylodge.services.inventory.InventoryService;
 import com.rohankumar.easylodge.services.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,8 +26,10 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
+    private final InventoryService inventoryService;
 
     @Override
+    @Transactional
     public RoomResponse createNewRoom(UUID hotelId, RoomRequest roomRequest) {
 
         log.info("Creating the room with type: {} for Hotel with Id: {}", roomRequest.getType(), hotelId);
@@ -39,7 +44,10 @@ public class RoomServiceImpl implements RoomService {
         Room savedRoom = roomRepository.save(room);
         log.info("Room created successfully with id: {}", savedRoom.getId());
 
-        // Todo: If hotel is active then, create inventory as soon as room is created
+        if(fetchedHotel.getActive()) {
+
+            inventoryService.initializeRoomInventoriesForYear(savedRoom);
+        }
 
         return RoomMapper.toResponse(savedRoom);
     }
@@ -72,18 +80,19 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional
     public boolean deleteRoomById(UUID id) {
 
         log.info("Deleting the room with id: {}", id);
 
-        boolean exists = roomRepository.existsById(id);
-        if(!exists) {
-            throw new ResourceNotFoundException("Room not found with id: " + id);
-        }
+        Room fetchedRoom = roomRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
 
-        roomRepository.deleteById(id);
+        inventoryService.deleteFutureRoomInventories(fetchedRoom);
 
-        // Todo: Delete all future inventory for this room
+        roomRepository.delete(fetchedRoom);
+
+        log.info("Room deleted successfully with id: {}", id);
 
         return true;
     }

@@ -4,14 +4,18 @@ import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
+import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.services.hotel.HotelService;
+import com.rohankumar.easylodge.services.inventory.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -20,6 +24,7 @@ import java.util.UUID;
 public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
+    private final InventoryService inventoryService;
 
     @Override
     public HotelResponse createNewHotel(HotelRequest hotelRequest) {
@@ -49,11 +54,12 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public boolean updateHotelActivation(UUID id, boolean active) {
 
         log.info("Updating the hotel with id: {} activation to {}", id, active);
 
-        Hotel existingHotel = hotelRepository.findById(id)
+        Hotel existingHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
         existingHotel.setActive(active);
@@ -62,7 +68,16 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Hotel activation updated successfully with id: {}", existingHotel.getId());
 
-        // Todo: Create Inventory for all the rooms for this hotel
+        if(existingHotel.getActive()) {
+
+            List<Room> rooms = existingHotel.getRooms();
+
+            if (rooms.isEmpty()) {
+                log.info("No rooms available for hotel with id: {}. No inventory created.", existingHotel.getId());
+            } else {
+                rooms.forEach(inventoryService::initializeRoomInventoriesForYear);
+            }
+        }
 
         return true;
     }
@@ -99,19 +114,20 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public boolean deleteHotelById(UUID id) {
 
         log.info("Deleting the hotel with id: {}", id);
 
-        boolean exists = hotelRepository.existsById(id);
-        if(!exists)
-            throw new ResourceNotFoundException("Hotel not found with id: " + id);
+        Hotel existingHotel = hotelRepository.findHotelWithRoomsById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
+
+        existingHotel.getRooms()
+                        .forEach(inventoryService::deleteFutureRoomInventories);
 
         hotelRepository.deleteById(id);
 
         log.info("Hotel deleted successfully with Id: {}", id);
-
-        // Todo: delete the future inventories for this hotel
 
         return true;
     }
