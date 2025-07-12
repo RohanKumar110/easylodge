@@ -75,6 +75,8 @@ public class HotelServiceImpl implements HotelService {
             if (rooms.isEmpty()) {
                 log.info("No rooms available for hotel with id: {}. No inventory created.", fetchedHotel.getId());
             } else {
+
+                // TODO: handle unique key violent case
                 rooms.forEach(inventoryService::initializeRoomInventoriesForYear);
             }
         }
@@ -122,7 +124,7 @@ public class HotelServiceImpl implements HotelService {
         Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        fetchedHotel.getRooms().forEach(inventoryService::deleteFutureRoomInventories);
+        fetchedHotel.getRooms().forEach(inventoryService::deleteAllRoomInventories);
 
         hotelRepository.delete(fetchedHotel);
 

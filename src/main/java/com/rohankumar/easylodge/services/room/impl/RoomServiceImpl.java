@@ -87,7 +87,7 @@ public class RoomServiceImpl implements RoomService {
         Room fetchedRoom = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
 
-        inventoryService.deleteFutureRoomInventories(fetchedRoom);
+        inventoryService.deleteAllRoomInventories(fetchedRoom);
 
         roomRepository.delete(fetchedRoom);
 
