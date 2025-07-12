@@ -17,7 +17,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/hotels/{hotelId}/rooms")
+@RequestMapping(path = "/admin/hotels/{hotelId}/rooms")
 public class AdminRoomController {
 
     private final RoomService roomService;
