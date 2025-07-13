@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -38,4 +39,21 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
             Long requiredNights,
             Pageable pageable
     );
+
+    @Modifying
+    @Query("""
+        UPDATE Inventory i
+        SET i.closed = :closed
+        WHERE i.hotel.id = :hotelId
+    """)
+    void changeInventoryAvailabilityByHotel(UUID hotelId, boolean closed);
+
+    @Query("""
+        SELECT i.inventoryDate
+        FROM Inventory i
+        WHERE i.hotel.id = :hotelId
+          AND i.room.id  = :roomId
+          AND i.inventoryDate BETWEEN :start AND :end
+    """)
+    List<LocalDate> findExistingInventoryDates(UUID hotelId, UUID roomId, LocalDate start, LocalDate end);
 }

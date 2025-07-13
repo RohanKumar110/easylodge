@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -68,17 +69,15 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Hotel activation updated successfully with id: {}", fetchedHotel.getId());
 
-        if(fetchedHotel.getActive()) {
-
-            List<Room> rooms = fetchedHotel.getRooms();
-
-            if (rooms.isEmpty()) {
-                log.info("No rooms available for hotel with id: {}. No inventory created.", fetchedHotel.getId());
-            } else {
-
-                // TODO: handle unique key violent case
-                rooms.forEach(inventoryService::initializeRoomInventoriesForYear);
-            }
+        if (fetchedHotel.getActive()) {
+            Optional.ofNullable(fetchedHotel.getRooms())
+                    .filter(rooms -> !rooms.isEmpty())
+                    .ifPresentOrElse(
+                            rooms -> rooms.forEach(inventoryService::initializeRoomInventoriesForYear),
+                            () -> log.info("No rooms available for hotel with id: {}. No inventory created.", fetchedHotel.getId())
+                    );
+        } else {
+            inventoryService.changeInventoryAvailabilityByHotel(fetchedHotel.getId(), true);
         }
 
         return true;

@@ -16,11 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -33,63 +33,60 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
 
     @Override
+    @Transactional
     public void initializeRoomInventoriesForYear(Room room) {
 
-        // TODO: Fix Batch Issue
+        // TODO: fix batch problem
 
-        LocalDate todayDate = LocalDate.now();
-        LocalDate endDate = todayDate.plusYears(1);
+        final Hotel hotel = room.getHotel();
+        final UUID hotelId = hotel.getId();
+        final UUID roomId = room.getId();
 
-        log.info("Initializing inventory for room with id: {} in hotel with id: {} for the next year",
-                room.getId(), room.getHotel().getId());
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusYears(1);
 
-        int count = 0;
-        List<Inventory> inventoryBatch = new ArrayList<>();
+        log.info("Initializing inventories for room {} in hotel {} ({} → {}).",
+                roomId, hotelId, start, end);
 
-        while(!todayDate.isEqual(endDate)) {
+        Set<LocalDate> existingDates = new HashSet<>(
+                inventoryRepository.findExistingInventoryDates(hotelId, roomId, start, end.minusDays(1)));
 
-            Inventory inventory = Inventory.builder()
-                    .hotel(room.getHotel())
+        long created = 0;
+        List<Inventory> batch = new ArrayList<>(inventoryBatchSize);
+
+        for (LocalDate date = start; date.isBefore(end); date = date.plusDays(1)) {
+
+            if (existingDates.contains(date))
+                continue;
+
+            batch.add(Inventory.builder()
+                    .hotel(hotel)
                     .room(room)
+                    .inventoryDate(date)
                     .bookedCount(0)
-                    .city(room.getHotel().getContactInfo().getCity())
-                    .inventoryDate(todayDate)
-                    .price(room.getBasePrice())
-                    .surgeFactor(BigDecimal.ONE)
                     .totalRoomsCount(room.getTotalRoomsCount())
+                    .surgeFactor(BigDecimal.ONE)
+                    .price(room.getBasePrice())
+                    .city(hotel.getContactInfo().getCity())
                     .closed(false)
-                    .build();
+                    .build());
 
-            inventoryBatch.add(inventory);
-
-            count++;
-            todayDate = todayDate.plusDays(1);
-
-            if(count % inventoryBatchSize == 0) {
-
-                inventoryRepository.saveAll(inventoryBatch);
-                inventoryRepository.flush();
-                inventoryBatch.clear();
+            if (batch.size() == inventoryBatchSize) {
+                inventoryRepository.saveAll(batch);
+                batch.clear();
+                created += inventoryBatchSize;
             }
         }
 
-        if (!inventoryBatch.isEmpty()) {
-            inventoryRepository.saveAll(inventoryBatch);
-            inventoryRepository.flush();
+        if (!batch.isEmpty()) {
+            inventoryRepository.saveAll(batch);
+            created += batch.size();
         }
 
-        log.info("Inventory initialized successfully for room with id: {}", room.getId());
-        log.info("Total inventories created: {}", inventoryBatch.size());
-    }
+        changeInventoryAvailabilityByHotel(hotelId, false);
 
-    @Override
-    public void deleteAllRoomInventories(Room room) {
-
-        log.info("Deleting inventories for room with id: {}", room.getId());
-
-        inventoryRepository.deleteByRoom(room);
-
-        log.info("Inventories deleted successfully for room with id: {}", room.getId());
+        log.info("Inventory initialized for room {}.", roomId);
+        log.info("New Inventory created for room {}.", created);
     }
 
     @Override
@@ -118,5 +115,27 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("Total Hotels Fetched: {}", hotelPage.getTotalElements());
 
         return PaginationResponse.makeResponse(hotelPage, HotelMapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public void changeInventoryAvailabilityByHotel(UUID hotelId, boolean closed) {
+
+        log.info("Updating inventory availability for hotelId={} to closed={}", hotelId, closed);
+
+        inventoryRepository.changeInventoryAvailabilityByHotel(hotelId, closed);
+
+        log.info("Inventory availability updated successfully");
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllRoomInventories(Room room) {
+
+        log.info("Deleting inventories for room with id: {}", room.getId());
+
+        inventoryRepository.deleteByRoom(room);
+
+        log.info("Inventories deleted successfully for room with id: {}", room.getId());
     }
 }
