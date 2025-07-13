@@ -2,11 +2,14 @@ package com.rohankumar.easylodge.services.hotel.impl;
 
 import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
+import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
+import com.rohankumar.easylodge.mappers.room.RoomMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.services.hotel.HotelService;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
@@ -52,6 +55,27 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Hotel fetched successfully with id: {}", fetchedHotel.getId());
         return HotelMapper.toResponse(fetchedHotel);
+    }
+
+    @Override
+    public HotelInfoResponse getHotelInfo(UUID id) {
+
+        log.info("Getting the hotel info with id: {}", id);
+
+        Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
+
+        log.info("Hotel fetched successfully with id: {}", fetchedHotel.getId());
+
+        List<RoomResponse> rooms = fetchedHotel.getRooms().stream()
+                .map(RoomMapper::toResponse)
+                .toList();
+
+        HotelInfoResponse hotelInfoResponse = new HotelInfoResponse();
+        hotelInfoResponse.setHotel(HotelMapper.toResponse(fetchedHotel));
+        hotelInfoResponse.setRooms(rooms);
+
+        return hotelInfoResponse;
     }
 
     @Override
