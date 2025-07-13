@@ -5,16 +5,14 @@ import com.rohankumar.easylodge.entities.common.DateAudit;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.gender.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "guests")

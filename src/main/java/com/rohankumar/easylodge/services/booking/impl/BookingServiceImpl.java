@@ -2,7 +2,10 @@ package com.rohankumar.easylodge.services.booking.impl;
 
 import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
+import com.rohankumar.easylodge.dtos.guest.GuestRequest;
+import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.entities.booking.Booking;
+import com.rohankumar.easylodge.entities.guest.Guest;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
@@ -10,6 +13,8 @@ import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.booking.BookingMapper;
+import com.rohankumar.easylodge.mappers.guest.GuestMapper;
+import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import com.rohankumar.easylodge.repositories.booking.BookingRepository;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -83,5 +89,53 @@ public class BookingServiceImpl implements BookingService {
         log.info("Booking created successfully with id: {}", savedBooking.getId());
 
         return BookingMapper.toResponse(savedBooking);
+    }
+
+    @Override
+    @Transactional
+    public List<GuestResponse> createGuests(UUID id, List<GuestRequest> guests) {
+
+        log.info("Creating guests for booking with id: {}", id);
+
+        Booking fetchedBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        if(hasBookingExpired(fetchedBooking)) {
+            log.info("Booking has expired");
+            throw new BadRequestException("Booking has already expired");
+        }
+
+        if(!fetchedBooking.getStatus().equals(BookingStatus.RESERVED)) {
+            log.info("Booking is not under reserved state");
+            throw new BadRequestException("Booking is not under reserved state, guests cannot be added");
+        }
+
+        guests.forEach(guestRequest -> {
+
+            Guest guest = Guest.builder()
+                    .name(guestRequest.getName())
+                    .gender(guestRequest.getGender())
+                    .age(guestRequest.getAge())
+                    .booking(fetchedBooking)
+                    .user(userRepository.findById(UUID.fromString("8b3b2617-4a16-4722-9eb6-7f56b6ba48e0")).get())
+                    .build();
+
+            fetchedBooking.getGuests().add(guest);
+        });
+
+        fetchedBooking.setStatus(BookingStatus.GUESTS_ADDED);
+        Booking savedBooking = bookingRepository.save(fetchedBooking);
+        log.info("Guests created successfully for booking with id: {}", savedBooking.getId());
+
+        return savedBooking.getGuests().stream()
+                .map(GuestMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public boolean hasBookingExpired(Booking booking) {
+
+        long numberOfMinutes = 10;
+        return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
     }
 }
