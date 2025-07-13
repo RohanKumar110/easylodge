@@ -1,5 +1,6 @@
 package com.rohankumar.easylodge.entities.payment;
 
+import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.common.DateAudit;
 import com.rohankumar.easylodge.enums.payment.PaymentStatus;
 import jakarta.persistence.*;
@@ -34,5 +35,7 @@ public class Payment extends DateAudit {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 }

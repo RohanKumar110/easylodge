@@ -64,6 +64,7 @@ public class InventoryServiceImpl implements InventoryService {
                     .room(room)
                     .inventoryDate(date)
                     .bookedCount(0)
+                    .reservedCount(0)
                     .totalRoomsCount(room.getTotalRoomsCount())
                     .surgeFactor(BigDecimal.ONE)
                     .price(room.getBasePrice())

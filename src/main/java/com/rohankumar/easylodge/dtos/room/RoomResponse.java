@@ -12,16 +12,10 @@ import java.util.UUID;
 public class RoomResponse {
 
     private UUID id;
-
     private String type;
-
     private BigDecimal basePrice;
-
     private String[] images;
-
     private String[] amenities;
-
     private Integer totalRoomsCount;
-
     private Integer capacity;
 }

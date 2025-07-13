@@ -14,14 +14,9 @@ import java.util.UUID;
 public class RoomRequest {
 
     private String type;
-
     private BigDecimal basePrice;
-
     private String[] images;
-
     private String[] amenities;
-
     private Integer totalRoomsCount;
-
     private Integer capacity;
 }
