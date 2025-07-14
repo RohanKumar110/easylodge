@@ -41,4 +41,14 @@ public class HotelBookingController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Guests Created Successfully", guestResponseList));
     }
+
+    @DeleteMapping("/{bookingId}/guests/{guestId}")
+    public ResponseEntity<ApiResponse<Void>> deleteGuest(
+            @PathVariable UUID bookingId, @PathVariable UUID guestId) {
+
+        log.info("Attempting to delete guests for booking: {}", bookingId);
+        bookingService.deleteGuest(bookingId, guestId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.NO_CONTENT.value(), "Guest Deleted Successfully"));
+    }
 }

@@ -1,6 +1,6 @@
 package com.rohankumar.easylodge.dtos.hotel.search;
 
-import com.rohankumar.easylodge.utilities.AppConstants;
+import com.rohankumar.easylodge.utilities.constants.AppConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

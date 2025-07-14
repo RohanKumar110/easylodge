@@ -14,8 +14,8 @@ import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.booking.BookingMapper;
 import com.rohankumar.easylodge.mappers.guest.GuestMapper;
-import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import com.rohankumar.easylodge.repositories.booking.BookingRepository;
+import com.rohankumar.easylodge.repositories.guest.GuestRepository;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
 import com.rohankumar.easylodge.repositories.room.RoomRepository;
@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -40,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
+    private final GuestRepository guestRepository;
     private final BookingRepository bookingRepository;
     private final InventoryRepository inventoryRepository;
 
@@ -137,5 +137,24 @@ public class BookingServiceImpl implements BookingService {
 
         long numberOfMinutes = 10;
         return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
+    }
+
+    @Override
+    @Transactional
+    public void deleteGuest(UUID id, UUID guestId) {
+
+        log.info("Deleting guest: {} for booking with id: {}", guestId, id);
+
+        log.info("Finding guest with id: {}", guestId);
+        Booking fetchedBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+        log.info("Booking found with id: {}", fetchedBooking.getId());
+
+        log.info("Finding guest with id: {}", guestId);
+        Guest fetchedGuest = guestRepository.findById(guestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
+
+        guestRepository.delete(fetchedGuest);
+        log.info("Guest deleted successfully with id: {}", fetchedGuest.getId());
     }
 }
