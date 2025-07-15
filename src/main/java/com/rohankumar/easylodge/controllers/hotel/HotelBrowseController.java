@@ -2,6 +2,7 @@ package com.rohankumar.easylodge.controllers.hotel;
 
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
+import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
@@ -25,12 +26,12 @@ public class HotelBrowseController {
     private final InventoryService inventoryService;
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PaginationResponse<HotelResponse>>> searchHotels(
+    public ResponseEntity<ApiResponse<PaginationResponse<HotelPriceResponse>>> searchHotels(
             @ModelAttribute HotelSearchRequest searchRequest) {
 
         // TODO: check for global response handler
         log.info("Attempting to search hotels for city: {}", searchRequest.getCity());
-        PaginationResponse<HotelResponse> paginationResponse = inventoryService.searchHotels(searchRequest);
+        PaginationResponse<HotelPriceResponse> paginationResponse = inventoryService.searchHotels(searchRequest);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotels Fetched Successfully", paginationResponse));
     }

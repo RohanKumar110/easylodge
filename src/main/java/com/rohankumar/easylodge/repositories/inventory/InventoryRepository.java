@@ -1,5 +1,6 @@
 package com.rohankumar.easylodge.repositories.inventory;
 
+import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
@@ -11,7 +12,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +24,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     void deleteByRoom(Room room);
 
     @Query("""
-        SELECT DISTINCT i.hotel
+        SELECT new com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse(i.hotel, MIN(i.price))
         FROM Inventory i
         WHERE i.city = :city
           AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
@@ -33,7 +33,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
         GROUP BY i.hotel, i.room
         HAVING COUNT(i.inventoryDate) = :requiredNights
     """)
-    Page<Hotel> searchHotelsWithAvailableInventory(
+    Page<HotelPriceResponse> searchHotelsWithAvailableInventory(
             String city,
             LocalDate startDate,
             LocalDate endDate,
@@ -70,4 +70,12 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Inventory> findAndLockAvailableInventory(Room room, LocalDate startDate, LocalDate endDate, Integer roomsCount);
+
+    @Query("""
+        SELECT i
+        FROM Inventory i
+            WHERE i.hotel = :hotel
+                AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
+    """)
+    List<Inventory> findByHotelAndDateBetween(Hotel hotel, LocalDate startDate, LocalDate endDate);
 }

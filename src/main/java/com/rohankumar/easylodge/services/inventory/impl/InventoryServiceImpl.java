@@ -1,12 +1,15 @@
 package com.rohankumar.easylodge.services.inventory.impl;
 
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
+import com.rohankumar.easylodge.entities.hotel.HotelDailyPrice;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
+import com.rohankumar.easylodge.repositories.hotel.HotelDailyPriceRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class InventoryServiceImpl implements InventoryService {
     private Integer inventoryBatchSize;
 
     private final InventoryRepository inventoryRepository;
+    private final HotelDailyPriceRepository dailyPriceRepository;
 
     @Override
     @Transactional
@@ -91,7 +95,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public PaginationResponse<HotelResponse> searchHotels(HotelSearchRequest searchRequest) {
+    public PaginationResponse<HotelPriceResponse> searchHotels(HotelSearchRequest searchRequest) {
 
         log.info("Getting {} hotels for city: {}", searchRequest.getPageSize(), searchRequest.getCity());
 
@@ -101,21 +105,40 @@ public class InventoryServiceImpl implements InventoryService {
 
         Pageable pageable = PageRequest.of(searchRequest.getPageNo(), searchRequest.getPageSize());
 
+        LocalDate now = LocalDate.now();
+        LocalDate maxCachedDate = now.plusDays(90);
         Long requiredNights = ChronoUnit.DAYS.between(searchRequest.getStartDate(), searchRequest.getEndDate());
 
-        Page<Hotel> hotelPage = inventoryRepository.searchHotelsWithAvailableInventory(
-                searchRequest.getCity(),
-                searchRequest.getStartDate(),
-                searchRequest.getEndDate(),
-                searchRequest.getRoomsCount(),
-                requiredNights,
-                pageable
-        );
+        Page<HotelPriceResponse> hotelResponsePage;
+        if (!searchRequest.getStartDate().isBefore(now) &&
+                !searchRequest.getEndDate().isAfter(maxCachedDate)) {
+
+            log.info("Using HotelDailyPrice for pricing — search is within 90 days");
+            hotelResponsePage = dailyPriceRepository.findAvailableHotelsFromDailyPrice(
+                    searchRequest.getCity(),
+                    searchRequest.getStartDate(),
+                    searchRequest.getEndDate(),
+                    requiredNights,
+                    pageable
+            );
+
+        } else {
+
+            log.info("Using Inventory for pricing — search is beyond 90 days");
+            hotelResponsePage = inventoryRepository.searchHotelsWithAvailableInventory(
+                    searchRequest.getCity(),
+                    searchRequest.getStartDate(),
+                    searchRequest.getEndDate(),
+                    searchRequest.getRoomsCount(),
+                    requiredNights,
+                    pageable
+            );
+        }
 
         log.info("Hotels fetched successfully");
-        log.info("Total Hotels Fetched: {}", hotelPage.getTotalElements());
+        log.info("Total Hotels Fetched: {}", hotelResponsePage.getTotalElements());
 
-        return PaginationResponse.makeResponse(hotelPage, HotelMapper::toResponse);
+        return PaginationResponse.makeResponse(hotelResponsePage, hotelPriceResponse -> hotelPriceResponse);
     }
 
     @Override
