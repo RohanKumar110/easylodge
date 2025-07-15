@@ -6,9 +6,12 @@ import com.rohankumar.easylodge.enums.role.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -17,7 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-public class User extends DateAudit {
+public class User extends DateAudit implements UserDetails {
 
     @Id
     @GeneratedValue
@@ -41,4 +44,18 @@ public class User extends DateAudit {
     @CollectionTable(name = "user_roles")
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
+
+    @Override
+    public String getUsername() {
+
+        return email;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toList());
+    }
 }
