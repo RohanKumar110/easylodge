@@ -2,10 +2,12 @@ package com.rohankumar.easylodge.services.hotel.impl;
 
 import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
+import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
@@ -19,9 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -60,7 +64,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public HotelInfoResponse getHotelInfo(UUID id) {
+    public HotelInfoResponse getHotelInfo(UUID id, HotelInfoRequest hotelInfoRequest) {
 
         log.info("Getting the hotel info with id: {}", id);
 
@@ -69,9 +73,35 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Hotel fetched successfully with id: {}", fetchedHotel.getId());
 
+        LocalDate startDate = hotelInfoRequest.getStartDate();
+        LocalDate endDate = hotelInfoRequest.getEndDate();
+
+        List<Inventory> inventories = inventoryService
+                .findByHotelAndDates(fetchedHotel, startDate, endDate);
+
+        Map<UUID, List<BigDecimal>> pricesByRoom = inventories.stream()
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getRoom().getId(),
+                        Collectors.mapping(Inventory::getPrice, Collectors.toList())
+                ));
+
+        Map<UUID, BigDecimal> avgPricesByRoom = pricesByRoom.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            List<BigDecimal> priceList = entry.getValue();
+                            BigDecimal sum = priceList.stream()
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            return sum.divide(BigDecimal.valueOf(priceList.size()), 2, RoundingMode.HALF_UP);
+                        }
+                ));
+
         List<RoomResponse> rooms = fetchedHotel.getRooms().stream()
-                .map(RoomMapper::toResponse)
-                .toList();
+                .map(room -> {
+                    RoomResponse roomResponse = RoomMapper.toResponse(room);
+                    roomResponse.setPrice(avgPricesByRoom.getOrDefault(room.getId(), BigDecimal.ZERO));
+                    return roomResponse;
+                }).toList();
 
         HotelInfoResponse hotelInfoResponse = new HotelInfoResponse();
         hotelInfoResponse.setHotel(HotelMapper.toResponse(fetchedHotel));

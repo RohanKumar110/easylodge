@@ -1,6 +1,6 @@
 package com.rohankumar.easylodge.controllers.hotel;
 
-import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
@@ -36,11 +36,13 @@ public class HotelBrowseController {
                 ApiResponse.success(HttpStatus.OK.value(), "Hotels Fetched Successfully", paginationResponse));
     }
 
-    @GetMapping("/{hotelId}/info")
-    public ResponseEntity<ApiResponse<HotelInfoResponse>> getHotelInfo(@PathVariable UUID hotelId) {
+    @PostMapping("/{hotelId}/info")
+    public ResponseEntity<ApiResponse<HotelInfoResponse>> getHotelInfo(
+            @PathVariable UUID hotelId,
+            @RequestBody HotelInfoRequest hotelInfoRequest) {
 
         log.info("Attempting to get hotel info for hotel: {}", hotelId);
-        HotelInfoResponse hotelInfoResponse = hotelService.getHotelInfo(hotelId);
+        HotelInfoResponse hotelInfoResponse = hotelService.getHotelInfo(hotelId, hotelInfoRequest);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Info Fetched Successfully", hotelInfoResponse));
     }

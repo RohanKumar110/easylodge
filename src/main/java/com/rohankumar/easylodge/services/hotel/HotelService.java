@@ -2,6 +2,7 @@ package com.rohankumar.easylodge.services.hotel;
 
 import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 
 import java.util.UUID;
@@ -12,7 +13,7 @@ public interface HotelService {
 
     HotelResponse getHotelById(UUID id);
 
-    HotelInfoResponse getHotelInfo(UUID id);
+    HotelInfoResponse getHotelInfo(UUID id, HotelInfoRequest hotelInfoRequest);
 
     boolean updateHotelActivation(UUID id, boolean active);
 

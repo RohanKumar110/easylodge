@@ -95,6 +95,13 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    public List<Inventory> findByHotelAndDates(Hotel hotel, LocalDate startDate, LocalDate endDate) {
+
+        log.info("Getting inventories for hotels from dates: {} to {}", startDate, endDate);
+        return inventoryRepository.findByHotelAndDateBetween(hotel, startDate, endDate);
+    }
+
+    @Override
     public PaginationResponse<HotelPriceResponse> searchHotels(HotelSearchRequest searchRequest) {
 
         log.info("Getting {} hotels for city: {}", searchRequest.getPageSize(), searchRequest.getCity());

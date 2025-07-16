@@ -13,7 +13,7 @@ public class RoomResponse {
 
     private UUID id;
     private String type;
-    private BigDecimal basePrice;
+    private BigDecimal price;
     private String[] images;
     private String[] amenities;
     private Integer totalRoomsCount;
