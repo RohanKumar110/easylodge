@@ -47,6 +47,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole(Role.HOTEL_MANAGER.name())
                         .requestMatchers("/bookings/**").authenticated()
                         .requestMatchers("/hotels/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

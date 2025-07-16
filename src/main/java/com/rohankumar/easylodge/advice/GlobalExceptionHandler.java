@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -32,6 +33,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(BAD_REQUEST).body(
                 ErrorResponse.error(BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
+
+        log.warn("Bad Credentials Error: {}", ex.getMessage());
+
+        return ResponseEntity.status(BAD_REQUEST).body(
+                ErrorResponse.error(BAD_REQUEST.value(), "Invalid email or password"));
     }
 
     @ExceptionHandler(Exception.class)

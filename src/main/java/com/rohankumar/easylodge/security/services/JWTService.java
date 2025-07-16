@@ -1,10 +1,10 @@
 package com.rohankumar.easylodge.security.services;
 
+import com.rohankumar.easylodge.entities.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -23,14 +23,14 @@ public class JWTService {
     @Value("${app.security.jwt.refresh.token.expiration}")
     private Long refreshTokenExpiration;
 
-    public String generateAccessToken(UserDetails user) {
+    public String generateAccessToken(User user) {
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", user.getAuthorities());
+        claims.put("roles", user.getRoles());
         return generateToken(claims, user, accessTokenExpiration);
     }
 
-    public String generateRefreshToken(UserDetails user) {
+    public String generateRefreshToken(User user) {
 
         Map<String, Object> claims = new HashMap<>();
         return generateToken(claims, user, refreshTokenExpiration);
@@ -41,7 +41,7 @@ public class JWTService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public boolean isTokenValid(String token, UserDetails user) {
+    public boolean isTokenValid(String token, User user) {
 
         String username = extractUsername(token);
         return username.equals(user.getUsername()) && !isTokenExpired(token);
@@ -57,7 +57,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String generateToken(Map<String, Object> claims, UserDetails user, Long accessTokenExpiration) {
+    private String generateToken(Map<String, Object> claims, User user, Long accessTokenExpiration) {
 
         return Jwts.builder()
                 .claims(claims)
