@@ -7,12 +7,14 @@ import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.role.Role;
 import com.rohankumar.easylodge.exceptions.BadRequestException;
+import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.user.UserMapper;
 import com.rohankumar.easylodge.repositories.user.UserRepository;
 import com.rohankumar.easylodge.security.services.JWTService;
 import com.rohankumar.easylodge.services.authentication.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -90,5 +92,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("User logged in successfully");
 
         return authenticationResponse;
+    }
+
+    @Override
+    public AuthenticationResponse renewAccessToken(String refreshToken) {
+
+        log.info("Renewing access token");
+
+        if (StringUtils.isBlank(refreshToken)) {
+            log.warn("Refresh token is missing");
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        String userEmail = jwtService.extractUsername(refreshToken);
+        if (StringUtils.isBlank(userEmail)) {
+            log.warn("Token does not contain a valid email");
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found not email: " + userEmail));
+
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            log.warn("Invalid or expired refresh token for user: {}", userEmail);
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        log.info("Access token renewed successfully");
+        return AuthenticationResponse.builder()
+                .accessToken(jwtService.generateAccessToken(user))
+                .roles(user.getRoles())
+                .build();
     }
 }

@@ -6,6 +6,8 @@ import com.rohankumar.easylodge.dtos.authentication.SignUpRequest;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.authentication.AuthenticationService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.time.Duration;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -58,5 +61,19 @@ public class AuthenticationController {
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(
                 ApiResponse.success(HttpStatus.OK.value(), "User Logged In Successfully", authenticationResponse));
+    }
+
+    @PostMapping("/renewToken")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> renewAccessToken(HttpServletRequest request) {
+
+        String refreshToken = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(c -> "refreshToken".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+
+        AuthenticationResponse authenticationResponse = authenticationService.renewAccessToken(refreshToken);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), "Token Renewed Successfully", authenticationResponse));
     }
 }
