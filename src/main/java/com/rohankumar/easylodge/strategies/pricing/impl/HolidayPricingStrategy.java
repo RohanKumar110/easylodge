@@ -2,7 +2,7 @@ package com.rohankumar.easylodge.strategies.pricing.impl;
 
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.strategies.pricing.PricingStrategy;
-import com.rohankumar.easylodge.utilities.constants.date.HolidayUtils;
+import com.rohankumar.easylodge.utils.constants.date.HolidayUtils;
 import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;

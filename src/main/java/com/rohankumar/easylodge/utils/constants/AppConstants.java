@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.utilities.constants;
+package com.rohankumar.easylodge.utils.constants;
 
 public class AppConstants {
 

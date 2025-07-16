@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.utilities.constants.date;
+package com.rohankumar.easylodge.utils.constants.date;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;

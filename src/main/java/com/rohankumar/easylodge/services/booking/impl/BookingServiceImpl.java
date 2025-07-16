@@ -19,7 +19,7 @@ import com.rohankumar.easylodge.repositories.guest.GuestRepository;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
 import com.rohankumar.easylodge.repositories.room.RoomRepository;
-import com.rohankumar.easylodge.repositories.user.UserRepository;
+import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,6 @@ import java.util.UUID;
 public class BookingServiceImpl implements BookingService {
 
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
     private final GuestRepository guestRepository;
     private final BookingRepository bookingRepository;
@@ -78,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
                 .amount(BigDecimal.TEN)
                 .hotel(fetchedHotel)
                 .room(fetchedRoom)
-                .user(userRepository.findById(UUID.fromString("8b3b2617-4a16-4722-9eb6-7f56b6ba48e0")).get())
+                .user(SecurityUtils.getCurrentUser())
                 .numberOfRooms(bookingRequest.getNumberOfRooms())
                 .checkInDate(bookingRequest.getCheckInDate())
                 .checkOutDate(bookingRequest.getCheckOutDate())
@@ -117,7 +116,7 @@ public class BookingServiceImpl implements BookingService {
                     .gender(guestRequest.getGender())
                     .age(guestRequest.getAge())
                     .booking(fetchedBooking)
-                    .user(userRepository.findById(UUID.fromString("8b3b2617-4a16-4722-9eb6-7f56b6ba48e0")).get())
+                    .user(SecurityUtils.getCurrentUser())
                     .build();
 
             fetchedBooking.getGuests().add(guest);
