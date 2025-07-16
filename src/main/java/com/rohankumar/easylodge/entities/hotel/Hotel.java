@@ -44,8 +44,8 @@ public class Hotel extends DateAudit {
     @Embedded
     private ContactInfo contactInfo;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch =  FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User owner;
 
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

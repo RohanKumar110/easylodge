@@ -11,6 +11,7 @@ import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import com.rohankumar.easylodge.mappers.room.RoomMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
+import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.hotel.HotelService;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class HotelServiceImpl implements HotelService {
         Hotel hotelToSave = HotelMapper.toEntity(hotelRequest);
         hotelToSave.setActive(false);
 
+        hotelToSave.setOwner(SecurityUtils.getCurrentUser());
         Hotel savedHotel = hotelRepository.save(hotelToSave);
 
         log.info("Hotel created successfully with id: {}", savedHotel.getId());
