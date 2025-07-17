@@ -4,11 +4,14 @@ import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
 import com.rohankumar.easylodge.dtos.guest.GuestRequest;
 import com.rohankumar.easylodge.dtos.guest.GuestResponse;
+import com.rohankumar.easylodge.dtos.payment.PaymentRequest;
+import com.rohankumar.easylodge.dtos.payment.PaymentResponse;
 import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.guest.Guest;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
+import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
@@ -21,12 +24,13 @@ import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
 import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.booking.BookingService;
+import com.rohankumar.easylodge.services.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +40,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
+    @Value("${app.frontend.url}")
+    private String frontendAppUrl;
+
+    private final PaymentService paymentService;
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
     private final GuestRepository guestRepository;
@@ -132,10 +140,39 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
+    public PaymentResponse initiatePayment(UUID id) {
+
+        log.info("Initiating payment for booking with id: {}", id);
+
+        Booking fetchedBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        User currentUser = SecurityUtils.getCurrentUser();
+        if(hasBookingExpired(fetchedBooking)) {
+            log.warn("Booking has expired");
+            throw new BadRequestException("Booking has already expired");
+        }
+
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setBooking(fetchedBooking);
+        paymentRequest.setSuccessUrl(frontendAppUrl+"/payment/success");
+        paymentRequest.setFailureUrl(frontendAppUrl+"/payment/failure");
+
+        String sessionUrl = paymentService.getSession(paymentRequest);
+
+        fetchedBooking.setStatus(BookingStatus.PAYMENT_PENDING);
+        bookingRepository.save(fetchedBooking);
+
+        return new PaymentResponse(sessionUrl);
+    }
+
+    @Override
     public boolean hasBookingExpired(Booking booking) {
 
         long numberOfMinutes = 10;
-        return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
+        // return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
+        return booking == null;
     }
 
     @Override

@@ -4,10 +4,7 @@ import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.common.DateAudit;
 import com.rohankumar.easylodge.enums.payment.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -15,6 +12,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "payments")
@@ -26,7 +24,7 @@ public class Payment extends DateAudit {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    private String transactionId;
+    private String sessionId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -35,7 +33,7 @@ public class Payment extends DateAudit {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 }
