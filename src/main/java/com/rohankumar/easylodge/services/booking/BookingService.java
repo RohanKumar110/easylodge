@@ -6,6 +6,8 @@ import com.rohankumar.easylodge.dtos.guest.GuestRequest;
 import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.payment.PaymentResponse;
 import com.rohankumar.easylodge.entities.booking.Booking;
+import com.stripe.model.Event;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +18,8 @@ public interface BookingService {
     List<GuestResponse> createGuests(UUID id, List<GuestRequest> guests);
 
     PaymentResponse initiatePayment(UUID id);
+
+    void capturePayment(Event event);
 
     boolean hasBookingExpired(Booking booking);
 

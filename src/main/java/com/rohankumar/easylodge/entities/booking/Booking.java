@@ -58,6 +58,9 @@ public class Booking extends DateAudit {
     @Column(nullable = false)
     private LocalDate checkOutDate;
 
+    @Column(unique = true)
+    private String sessionId;
+
     @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Guest> guests = new ArrayList<>();
 }

@@ -25,12 +25,15 @@ import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.payment.PaymentService;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -168,11 +171,40 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
+    public void capturePayment(Event event) {
+
+        if("checkout.session.completed".equals(event.getType())) {
+
+            Session session = (Session) event.getDataObjectDeserializer().getObject()
+                    .orElse(null);
+
+            if(session != null) {
+
+                Booking fetchedBooking = bookingRepository.findBySessionId(session.getId());
+                fetchedBooking.setStatus(BookingStatus.CONFIRMED);
+                bookingRepository.save(fetchedBooking);
+
+                inventoryRepository.findAndLockReservedInventory(
+                                fetchedBooking.getRoom(), fetchedBooking.getCheckInDate(),
+                        fetchedBooking.getCheckOutDate(), fetchedBooking.getNumberOfRooms());
+
+                inventoryRepository.updateBookedAndReservedCountByRoomAndDateBetween(
+                        fetchedBooking.getRoom(), fetchedBooking.getCheckInDate(),
+                        fetchedBooking.getCheckOutDate(), fetchedBooking.getNumberOfRooms());
+            }
+
+        } else {
+            log.info("Unhandled event type: {}", event.getType());
+        }
+    }
+
+    @Override
     public boolean hasBookingExpired(Booking booking) {
 
         long numberOfMinutes = 10;
-        // return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
         return booking == null;
+        //return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
     }
 
     @Override

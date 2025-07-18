@@ -1,12 +1,11 @@
 package com.rohankumar.easylodge.services.payment.impl;
 
 import com.rohankumar.easylodge.dtos.payment.PaymentRequest;
+import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
-import com.rohankumar.easylodge.entities.payment.Payment;
 import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.entities.user.User;
-import com.rohankumar.easylodge.enums.payment.PaymentStatus;
-import com.rohankumar.easylodge.repositories.payment.PaymentRepository;
+import com.rohankumar.easylodge.repositories.booking.BookingRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.payment.PaymentService;
 import com.stripe.exception.StripeException;
@@ -18,9 +17,7 @@ import com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
-
 import static com.stripe.param.checkout.SessionCreateParams.*;
 import static com.stripe.param.checkout.SessionCreateParams.BillingAddressCollection.REQUIRED;
 import static com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT;
@@ -30,7 +27,7 @@ import static com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT;
 @RequiredArgsConstructor
 public class StripePaymentService implements PaymentService {
 
-    private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public String getSession(PaymentRequest paymentRequest) {
@@ -79,22 +76,15 @@ public class StripePaymentService implements PaymentService {
 
             Session session = Session.create(sessionParams);
 
-            Payment newPayment = Payment.builder()
-                    .sessionId(session.getId())
-                    .status(PaymentStatus.PENDING)
-                    .amount(paymentRequest.getBooking().getAmount())
-                    .booking(paymentRequest.getBooking())
-                    .build();
-
-            log.info("Saving Payment with session: {}", session.getId());
-            Payment savedPayment = paymentRepository.save(newPayment);
-            log.info("Payment saved successfully with status: {}", savedPayment.getStatus());
+            Booking booking = paymentRequest.getBooking();
+            booking.setSessionId(session.getId());
+            bookingRepository.save(booking);
 
             return session.getUrl();
 
         } catch (StripeException ex) {
             log.error("Failed to create Stripe checkout session");
-            log.error("Erroe Message: " + ex.getMessage());
+            log.error("Error Message: " + ex.getMessage());
             log.error("Error: ", ex);
             throw new RuntimeException("Payment Error", ex);
         }

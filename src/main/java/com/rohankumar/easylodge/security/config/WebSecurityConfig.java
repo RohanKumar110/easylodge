@@ -48,6 +48,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/bookings/**").authenticated()
                         .requestMatchers("/hotels/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/webhook/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

@@ -69,7 +69,12 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
              AND i.closed = FALSE
     """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<Inventory> findAndLockAvailableInventory(Room room, LocalDate startDate, LocalDate endDate, Integer roomsCount);
+    List<Inventory> findAndLockAvailableInventory(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer roomsCount
+    );
 
     @Query("""
         SELECT i
@@ -78,4 +83,38 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
                 AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
     """)
     List<Inventory> findByHotelAndDateBetween(Hotel hotel, LocalDate startDate, LocalDate endDate);
+
+    @Query("""
+        SELECT i
+        FROM Inventory i
+        WHERE i.room = :room
+             AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
+             AND (i.totalRoomsCount - i.bookedCount) >= :roomsCount
+             AND i.closed = FALSE
+    """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Inventory> findAndLockReservedInventory(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer roomsCount
+    );
+
+    @Query("""
+        UPDATE Inventory i
+            SET i.reservedCount = i.reservedCount - :roomsCount,
+                i.bookedCount = i.bookedCount + :roomsCount
+            WHERE i.room = :room
+                   AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
+                   AND (i.totalRoomsCount - i.bookedCount - i.reservedCount) >= :roomsCount
+                   AND i.reservedCount >= :roomsCount
+                   AND i.closed = FALSE
+    """)
+    @Modifying
+    void updateBookedAndReservedCountByRoomAndDateBetween(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer roomsCount
+    );
 }
