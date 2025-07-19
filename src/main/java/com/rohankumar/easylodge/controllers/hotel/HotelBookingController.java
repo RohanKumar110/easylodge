@@ -51,6 +51,15 @@ public class HotelBookingController {
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Booking Payment Initiated Successfully", paymentResponse));
     }
 
+    @PostMapping("/{bookingId}/cancel")
+    public ResponseEntity<ApiResponse<Void>> cancelBooking(@PathVariable UUID bookingId) {
+
+        log.info("Attempting to cancel booking: {}", bookingId);
+        bookingService.cancelBooking(bookingId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Hotel Booking Cancelled Successfully"));
+    }
+
     @DeleteMapping("/{bookingId}/guests/{guestId}")
     public ResponseEntity<ApiResponse<Void>> deleteGuest(
             @PathVariable UUID bookingId, @PathVariable UUID guestId) {

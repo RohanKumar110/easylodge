@@ -21,6 +21,8 @@ public interface BookingService {
 
     void capturePayment(Event event);
 
+    void cancelBooking(UUID id);
+
     boolean hasBookingExpired(Booking booking);
 
     void deleteGuest(UUID id, UUID guestId);

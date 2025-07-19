@@ -93,7 +93,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
              AND i.closed = FALSE
     """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<Inventory> findAndLockReservedInventory(
+    List<Inventory> lockBookedOrReservedInventory(
             Room room,
             LocalDate startDate,
             LocalDate endDate,
@@ -111,7 +111,23 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
                    AND i.closed = FALSE
     """)
     @Modifying
-    void updateBookedAndReservedCountByRoomAndDateBetween(
+    void confirmBookingByRoomAndDateBetween(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer roomsCount
+    );
+
+    @Query("""
+        UPDATE Inventory i
+            SET i.bookedCount = i.bookedCount - :roomsCount
+            WHERE i.room = :room
+                   AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
+                   AND (i.totalRoomsCount - i.bookedCount) >= :roomsCount
+                   AND i.closed = FALSE
+    """)
+    @Modifying
+    void cancelBookingByRoomAndDateBetween(
             Room room,
             LocalDate startDate,
             LocalDate endDate,

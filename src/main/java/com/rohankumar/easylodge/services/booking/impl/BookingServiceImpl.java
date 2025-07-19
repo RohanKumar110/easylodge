@@ -25,14 +25,18 @@ import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.payment.PaymentService;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
+import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -185,13 +189,13 @@ public class BookingServiceImpl implements BookingService {
                 fetchedBooking.setStatus(BookingStatus.CONFIRMED);
                 bookingRepository.save(fetchedBooking);
 
-                inventoryRepository.findAndLockReservedInventory(
-                                fetchedBooking.getRoom(), fetchedBooking.getCheckInDate(),
-                        fetchedBooking.getCheckOutDate(), fetchedBooking.getNumberOfRooms());
+                Room room = fetchedBooking.getRoom();
+                LocalDate checkIn = fetchedBooking.getCheckInDate();
+                LocalDate checkOut = fetchedBooking.getCheckOutDate();
+                int roomsCount = fetchedBooking.getNumberOfRooms();
 
-                inventoryRepository.updateBookedAndReservedCountByRoomAndDateBetween(
-                        fetchedBooking.getRoom(), fetchedBooking.getCheckInDate(),
-                        fetchedBooking.getCheckOutDate(), fetchedBooking.getNumberOfRooms());
+                inventoryRepository.lockBookedOrReservedInventory(room, checkIn, checkOut, roomsCount);
+                inventoryRepository.confirmBookingByRoomAndDateBetween(room, checkIn, checkOut, roomsCount);
             }
 
         } else {
@@ -200,11 +204,49 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
+    public void cancelBooking(UUID id) {
+
+        log.info("Canceling booking with id: {}", id);
+
+        Booking fetchedBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        if(!fetchedBooking.getStatus().equals(BookingStatus.CONFIRMED)) {
+            log.warn("Only confirmed bookings can be cancelled");
+            throw new BadRequestException("Only confirmed bookings can be cancelled");
+        }
+
+        fetchedBooking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(fetchedBooking);
+
+        Room room = fetchedBooking.getRoom();
+        LocalDate checkIn = fetchedBooking.getCheckInDate();
+        LocalDate checkOut = fetchedBooking.getCheckOutDate();
+        int roomsCount = fetchedBooking.getNumberOfRooms();
+
+        inventoryRepository.lockBookedOrReservedInventory(room, checkIn, checkOut, roomsCount);
+        inventoryRepository.cancelBookingByRoomAndDateBetween(room, checkIn, checkOut, roomsCount);
+
+        try {
+
+            Session session = Session.retrieve(fetchedBooking.getSessionId());
+            RefundCreateParams refundParams = RefundCreateParams.builder()
+                    .setPaymentIntent(session.getPaymentIntent())
+                    .build();
+
+            Refund.create(refundParams);
+            log.info("Booking has been cancelled successfully");
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public boolean hasBookingExpired(Booking booking) {
 
         long numberOfMinutes = 10;
-        return booking == null;
-        //return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
+        return booking.getCreatedAt().plusMinutes(numberOfMinutes).isBefore(LocalDateTime.now());
     }
 
     @Override
