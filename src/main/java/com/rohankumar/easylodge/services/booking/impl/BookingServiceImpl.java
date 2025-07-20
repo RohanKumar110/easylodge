@@ -178,10 +178,15 @@ public class BookingServiceImpl implements BookingService {
         paymentRequest.setSuccessUrl(frontendAppUrl+"/payment/success");
         paymentRequest.setFailureUrl(frontendAppUrl+"/payment/failure");
 
+        log.info("Creating Stripe session for booking: {}", id);
         String sessionUrl = paymentService.getSession(paymentRequest);
+        log.info("Stripe session created with URL: {}", sessionUrl);
 
         fetchedBooking.setStatus(BookingStatus.PAYMENT_PENDING);
         bookingRepository.save(fetchedBooking);
+        log.info("💾 Booking status updated to PAYMENT_PENDING for booking: {}", id);
+
+        log.info("Payment initiation complete for booking: {}", id);
 
         return new PaymentResponse(sessionUrl);
     }
@@ -190,67 +195,101 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void capturePayment(Event event) {
 
-        if("checkout.session.completed".equals(event.getType())) {
-
-            Session session = (Session) event.getDataObjectDeserializer().getObject()
-                    .orElse(null);
-
-            if(session != null) {
-
-                Booking fetchedBooking = bookingRepository.findBySessionId(session.getId());
-                fetchedBooking.setStatus(BookingStatus.CONFIRMED);
-                bookingRepository.save(fetchedBooking);
-
-                Room room = fetchedBooking.getRoom();
-                LocalDate checkIn = fetchedBooking.getCheckInDate();
-                LocalDate checkOut = fetchedBooking.getCheckOutDate();
-                int roomsCount = fetchedBooking.getNumberOfRooms();
-
-                inventoryRepository.lockBookedOrReservedInventory(room, checkIn, checkOut, roomsCount);
-                inventoryRepository.confirmBookingByRoomAndDateBetween(room, checkIn, checkOut, roomsCount);
-            }
-
-        } else {
-            log.info("Unhandled event type: {}", event.getType());
+        if (!"checkout.session.completed".equals(event.getType())) {
+            log.info("Unhandled Stripe event type: {}", event.getType());
+            return;
         }
+
+        Session session = (Session) event.getDataObjectDeserializer()
+                .getObject()
+                .orElse(null);
+
+        if (session == null) {
+            log.info("Failed to deserialize Stripe session object from event: {}", event.getId());
+            return;
+        }
+
+        String sessionId = session.getId();
+        log.info("Processing 'checkout.session.completed' for session: {}", sessionId);
+
+        Booking booking = bookingRepository.findBySessionId(sessionId);
+
+        if (booking == null) {
+            log.info("No booking found for session ID: {}", sessionId);
+            return;
+        }
+
+        if (booking.getStatus() == BookingStatus.CONFIRMED) {
+
+            log.info("Booking with session {} is already confirmed. Skipping update.", sessionId);
+            return;
+        }
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+        log.info("Booking confirmed with id: {}.", booking.getId());
+
+        Room room = booking.getRoom();
+        LocalDate checkIn = booking.getCheckInDate();
+        LocalDate checkOut = booking.getCheckOutDate();
+        int roomsCount = booking.getNumberOfRooms();
+
+        inventoryRepository.lockBookedOrReservedInventory(room, checkIn, checkOut, roomsCount);
+        inventoryRepository.confirmBookingByRoomAndDateBetween(room, checkIn, checkOut, roomsCount);
+
+        log.info("Inventory locked and confirmed for booking: {}", booking.getId());
     }
+
 
     @Override
     @Transactional
     public void cancelBooking(UUID id) {
+        
+        log.info("Initiating cancellation for booking: {}", id);
 
-        log.info("Canceling booking with id: {}", id);
-
-        Booking fetchedBooking = bookingRepository.findById(id)
+        Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
 
-        if(!fetchedBooking.getStatus().equals(BookingStatus.CONFIRMED)) {
-            log.warn("Only confirmed bookings can be cancelled");
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+
+            log.warn("Attempt to cancel non-confirmed booking: {} with status: {}", id, booking.getStatus());
             throw new BadRequestException("Only confirmed bookings can be cancelled");
         }
 
-        fetchedBooking.setStatus(BookingStatus.CANCELLED);
-        bookingRepository.save(fetchedBooking);
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+        log.info("Booking status updated to CANCELLED with id: {}", id);
 
-        Room room = fetchedBooking.getRoom();
-        LocalDate checkIn = fetchedBooking.getCheckInDate();
-        LocalDate checkOut = fetchedBooking.getCheckOutDate();
-        int roomsCount = fetchedBooking.getNumberOfRooms();
+        Room room = booking.getRoom();
+        LocalDate checkIn = booking.getCheckInDate();
+        LocalDate checkOut = booking.getCheckOutDate();
+        int roomsCount = booking.getNumberOfRooms();
 
         inventoryRepository.lockBookedOrReservedInventory(room, checkIn, checkOut, roomsCount);
         inventoryRepository.cancelBookingByRoomAndDateBetween(room, checkIn, checkOut, roomsCount);
 
+        log.info("Inventory updated for cancelled booking: {}", id);
+
         try {
 
-            Session session = Session.retrieve(fetchedBooking.getSessionId());
+            Session session = Session.retrieve(booking.getSessionId());
+
+            if (session == null || session.getPaymentIntent() == null) {
+                log.warn("Stripe session or payment intent missing for booking: {}", id);
+                throw new IllegalStateException("Unable to process refund due to missing payment intent");
+            }
+
             RefundCreateParams refundParams = RefundCreateParams.builder()
                     .setPaymentIntent(session.getPaymentIntent())
                     .build();
 
-            Refund.create(refundParams);
-            log.info("Booking has been cancelled successfully");
+            Refund refund = Refund.create(refundParams);
+            log.info("Refund processed successfully for booking: {} and refund: {}", id, refund.getId());
+
         } catch (StripeException e) {
-            throw new RuntimeException(e);
+            
+            log.error("Stripe refund failed for booking: {}", id, e);
+            throw new RuntimeException("Failed to process refund via Stripe", e);
         }
     }
 

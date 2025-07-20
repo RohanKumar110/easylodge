@@ -26,7 +26,7 @@ public interface BookingService {
 
     void cancelBooking(UUID id);
 
-    boolean hasBookingExpired(Booking booking);
+    boolean hasBookingExpired(Booking id);
 
     void deleteGuest(UUID id, UUID guestId);
 }
