@@ -13,12 +13,13 @@ import com.stripe.model.Customer;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.checkout.SessionCreateParams.LineItem;
 import com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import static com.stripe.param.checkout.SessionCreateParams.*;
 import static com.stripe.param.checkout.SessionCreateParams.BillingAddressCollection.REQUIRED;
 import static com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT;
 
@@ -27,6 +28,9 @@ import static com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT;
 @RequiredArgsConstructor
 public class StripePaymentService implements PaymentService {
 
+    @Value("${app.payment.currency}")
+    private String currency;
+
     private final BookingRepository bookingRepository;
 
     @Override
@@ -34,59 +38,76 @@ public class StripePaymentService implements PaymentService {
 
         try {
 
-            log.info("Getting payment session for booking: {}", paymentRequest.getBooking().getId());
-
-            log.info("Getting current user");
+            Booking booking = paymentRequest.getBooking();
             User currentUser = SecurityUtils.getCurrentUser();
 
-            log.info("Creating customer information for user: {}", currentUser.getId());
-            Customer customer = Customer.create(
-                    CustomerCreateParams.builder()
-                            .setName(currentUser.getName())
-                            .setEmail(currentUser.getEmail())
-                            .build()
-            );
+            log.info("Initiating payment session for booking ID: {}", booking.getId());
 
-            Hotel hotel = paymentRequest.getBooking().getHotel();
-            Room room =  paymentRequest.getBooking().getRoom();
-            BigDecimal amount = paymentRequest.getBooking().getAmount();
-            Long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
+            Customer customer = createStripeCustomer(currentUser);
 
-            LineItem lineItem =  LineItem.builder()
-                    .setQuantity(1L)
-                    .setPriceData(PriceData.builder()
-                            .setUnitAmount(amountInCents)
-                            .setCurrency("usd")
-                            .setProductData(PriceData.ProductData.builder()
-                                    .setName(hotel.getName() + " - " + room.getType())
-                                    .setDescription("Booking ID: " + paymentRequest.getBooking().getId())
-                                    .build())
-                            .build())
-                    .build();
+            LineItem lineItem = buildLineItem(booking);
 
-            log.info("Creating session");
-            SessionCreateParams sessionParams = builder()
-                    .setMode(PAYMENT)
-                    .setBillingAddressCollection(REQUIRED)
-                    .setCustomer(customer.getId())
-                    .setSuccessUrl(paymentRequest.getSuccessUrl())
-                    .setCancelUrl(paymentRequest.getFailureUrl())
-                    .addLineItem(lineItem)
-                    .build();
+            Session session = createStripeSession(paymentRequest, customer, lineItem);
 
-            Session session = Session.create(sessionParams);
-
-            Booking booking = paymentRequest.getBooking();
             booking.setSessionId(session.getId());
             bookingRepository.save(booking);
 
             return session.getUrl();
 
-        } catch (StripeException ex) {
-            log.error("Failed to create Stripe checkout session");
-            log.error("Error Message: " + ex.getMessage());
-            log.error("Error: ", ex);
-            throw new RuntimeException("Payment Error", ex);
+        } catch (StripeException e) {
+
+            log.error("Stripe session creation failed: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to initiate payment session.", e);
         }
+    }
+
+    private Customer createStripeCustomer(User user) throws StripeException {
+
+        log.debug("Creating Stripe customer for user: {}", user.getId());
+
+        CustomerCreateParams customerParams = CustomerCreateParams.builder()
+                .setName(user.getName())
+                .setEmail(user.getEmail())
+                .build();
+
+        return Customer.create(customerParams);
+    }
+
+    private LineItem buildLineItem(Booking booking) {
+
+        Hotel hotel = booking.getHotel();
+        Room room = booking.getRoom();
+        BigDecimal amount = booking.getAmount();
+        long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
+
+        return LineItem.builder()
+                .setQuantity(1L)
+                .setPriceData(
+                        PriceData.builder()
+                                .setUnitAmount(amountInCents)
+                                .setCurrency(currency)
+                                .setProductData(
+                                        PriceData.ProductData.builder()
+                                                .setName(hotel.getName() + " - " + room.getType())
+                                                .setDescription("Booking ID: " + booking.getId())
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+    }
+
+    private Session createStripeSession(PaymentRequest request, Customer customer, LineItem lineItem) throws StripeException {
+
+        SessionCreateParams sessionParams = SessionCreateParams.builder()
+                .setMode(PAYMENT)
+                .setBillingAddressCollection(REQUIRED)
+                .setCustomer(customer.getId())
+                .setSuccessUrl(request.getSuccessUrl())
+                .setCancelUrl(request.getFailureUrl())
+                .addLineItem(lineItem)
+                .build();
+
+        return Session.create(sessionParams);
     }
 }
