@@ -2,6 +2,7 @@ package com.rohankumar.easylodge.controllers.hotel;
 
 import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
+import com.rohankumar.easylodge.dtos.booking.BookingStatusResponse;
 import com.rohankumar.easylodge.dtos.guest.GuestRequest;
 import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.payment.PaymentResponse;
@@ -58,6 +59,15 @@ public class HotelBookingController {
         bookingService.cancelBooking(bookingId);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Booking Cancelled Successfully"));
+    }
+
+    @GetMapping("/{bookingId}/status")
+    public ResponseEntity<ApiResponse<BookingStatusResponse>> getBookingStatus(@PathVariable UUID bookingId) {
+
+        log.info("Attempting to get booking status for booking: {}", bookingId);
+        BookingStatusResponse bookingStatusResponse = bookingService.getBookingStatus(bookingId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Hotel Status Fetched Successfully",  bookingStatusResponse));
     }
 
     @DeleteMapping("/{bookingId}/guests/{guestId}")

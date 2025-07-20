@@ -34,6 +34,7 @@ public class BookingMapper {
                 .room(RoomMapper.toResponse(booking.getRoom()))
                 .user(UserMapper.toResponse(booking.getUser()))
                 .numberOfRooms(booking.getNumberOfRooms())
+                .amount(booking.getAmount())
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
                 .guests(booking.getGuests() != null ?

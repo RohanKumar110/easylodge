@@ -6,6 +6,8 @@ import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +23,7 @@ public class BookingResponse {
     private BookingStatus status;
     private HotelResponse hotel;
     private RoomResponse room;
+    private BigDecimal amount;
     private UserResponse user;
     private Integer numberOfRooms;
     private LocalDate checkInDate;

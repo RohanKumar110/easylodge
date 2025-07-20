@@ -2,6 +2,7 @@ package com.rohankumar.easylodge.services.booking.impl;
 
 import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
+import com.rohankumar.easylodge.dtos.booking.BookingStatusResponse;
 import com.rohankumar.easylodge.dtos.guest.GuestRequest;
 import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.payment.PaymentRequest;
@@ -25,6 +26,7 @@ import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.payment.PaymentService;
+import com.rohankumar.easylodge.services.pricing.PricingService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.Refund;
@@ -50,6 +52,7 @@ public class BookingServiceImpl implements BookingService {
     @Value("${app.frontend.url}")
     private String frontendAppUrl;
 
+    private final PricingService pricingService;
     private final PaymentService paymentService;
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
@@ -85,11 +88,12 @@ public class BookingServiceImpl implements BookingService {
 
         inventoryRepository.saveAll(inventories);
 
-        // TODO: calculate dynamic amount
+        BigDecimal pricePerRoom = pricingService.calculateTotalPrice(inventories);
+        BigDecimal totalPrice = pricePerRoom.multiply(BigDecimal.valueOf(bookingRequest.getNumberOfRooms()));
 
         Booking booking = Booking.builder()
                 .status(BookingStatus.RESERVED)
-                .amount(BigDecimal.TEN)
+                .amount(totalPrice)
                 .hotel(fetchedHotel)
                 .room(fetchedRoom)
                 .user(SecurityUtils.getCurrentUser())
@@ -144,6 +148,14 @@ public class BookingServiceImpl implements BookingService {
         return savedBooking.getGuests().stream()
                 .map(GuestMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public BookingStatusResponse getBookingStatus(UUID id) {
+
+        return bookingRepository.findById(id)
+                .map(booking -> new BookingStatusResponse(booking.getStatus()))
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
     }
 
     @Override
