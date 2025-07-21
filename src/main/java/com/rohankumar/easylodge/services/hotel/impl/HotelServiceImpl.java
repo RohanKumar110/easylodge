@@ -9,6 +9,7 @@ import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
+import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import com.rohankumar.easylodge.mappers.room.RoomMapper;
@@ -71,43 +72,33 @@ public class HotelServiceImpl implements HotelService {
         Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        log.info("Hotel fetched successfully with id: {}", fetchedHotel.getId());
-
-        LocalDate startDate = hotelInfoRequest.getStartDate();
-        LocalDate endDate = hotelInfoRequest.getEndDate();
-
-        List<Inventory> inventories = inventoryService
-                .findByHotelAndDates(fetchedHotel, startDate, endDate);
-
-        Map<UUID, List<BigDecimal>> pricesByRoom = inventories.stream()
-                .collect(Collectors.groupingBy(
-                        inv -> inv.getRoom().getId(),
-                        Collectors.mapping(Inventory::getPrice, Collectors.toList())
-                ));
-
-        Map<UUID, BigDecimal> avgPricesByRoom = pricesByRoom.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            List<BigDecimal> priceList = entry.getValue();
-                            BigDecimal sum = priceList.stream()
-                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-                            return sum.divide(BigDecimal.valueOf(priceList.size()), 2, RoundingMode.HALF_UP);
-                        }
-                ));
-
         List<RoomResponse> rooms = fetchedHotel.getRooms().stream()
-                .map(room -> {
-                    RoomResponse roomResponse = RoomMapper.toResponse(room);
-                    roomResponse.setPrice(avgPricesByRoom.getOrDefault(room.getId(), BigDecimal.ZERO));
-                    return roomResponse;
-                }).toList();
+                .map(RoomMapper::toResponse)
+                .toList();
 
         HotelInfoResponse hotelInfoResponse = new HotelInfoResponse();
         hotelInfoResponse.setHotel(HotelMapper.toResponse(fetchedHotel));
         hotelInfoResponse.setRooms(rooms);
 
+        log.info("Hotel info fetched successfully with id: {}", fetchedHotel.getId());
+
         return hotelInfoResponse;
+    }
+
+    @Override
+    public List<HotelResponse> getAllHotels() {
+
+        User  user = SecurityUtils.getCurrentUser();
+        log.info("Getting all the hotels for user: {}", user.getId());
+
+        List<Hotel> hotels = hotelRepository.findByOwner(user);
+
+        log.info("Hotels fetched successfully");
+        log.info("Total hotels found: {}", hotels.size());
+
+        return hotels.stream()
+                .map(HotelMapper::toResponse)
+                .toList();
     }
 
     @Override

@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -37,6 +39,15 @@ public class AdminHotelController {
         HotelResponse hotelResponse =  hotelService.getHotelById(hotelId);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Fetched Successfully", hotelResponse));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<HotelResponse>>> getAllHotels() {
+
+        log.info("Attempting to get all hotels");
+        List<HotelResponse> hotelResponseList = hotelService.getAllHotels();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Hotels Fetched Successfully", hotelResponseList));
     }
 
     @PatchMapping("/{hotelId}/activation")
