@@ -4,6 +4,7 @@ import com.rohankumar.easylodge.dtos.room.RoomRequest;
 import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.room.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
@@ -24,7 +25,7 @@ public class AdminRoomController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<RoomResponse>> createNewRoom(
-            @PathVariable UUID hotelId, @RequestBody RoomRequest roomRequest) {
+            @PathVariable UUID hotelId, @Valid @RequestBody RoomRequest roomRequest) {
 
         log.info("Attempting to create a room with type: {}", roomRequest.getType());
         RoomResponse roomResponse = roomService.createNewRoom(hotelId, roomRequest);
@@ -33,7 +34,8 @@ public class AdminRoomController {
     }
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<ApiResponse<RoomResponse>> getRoomById(@PathVariable UUID roomId) {
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoomById(
+            @PathVariable UUID hotelId, @PathVariable UUID roomId) {
 
         log.info("Attempting to get room with id: {}", roomId);
         RoomResponse roomResponse = roomService.getRoomById(roomId);
@@ -51,7 +53,8 @@ public class AdminRoomController {
     }
 
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<ApiResponse<Void>> deleteRoomById(@PathVariable UUID roomId) {
+    public ResponseEntity<ApiResponse<Void>> deleteRoomById(
+            @PathVariable UUID hotelId, @PathVariable UUID roomId) {
 
         log.info("Attempting to delete room with id: {}", roomId);
         roomService.deleteRoomById(roomId);

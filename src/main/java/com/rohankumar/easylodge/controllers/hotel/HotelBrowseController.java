@@ -8,6 +8,7 @@ import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.services.hotel.HotelService;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class HotelBrowseController {
 
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<PaginationResponse<HotelPriceResponse>>> searchHotels(
-            @ModelAttribute HotelSearchRequest searchRequest) {
+            @Valid @ModelAttribute HotelSearchRequest searchRequest) {
 
         // TODO: check for global response handler
         log.info("Attempting to search hotels for city: {}", searchRequest.getCity());
@@ -39,7 +40,7 @@ public class HotelBrowseController {
     @PostMapping("/{hotelId}/info")
     public ResponseEntity<ApiResponse<HotelInfoResponse>> getHotelInfo(
             @PathVariable UUID hotelId,
-            @RequestBody HotelInfoRequest hotelInfoRequest) {
+            @Valid @RequestBody HotelInfoRequest hotelInfoRequest) {
 
         log.info("Attempting to get hotel info for hotel: {}", hotelId);
         HotelInfoResponse hotelInfoResponse = hotelService.getHotelInfo(hotelId, hotelInfoRequest);

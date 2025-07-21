@@ -4,6 +4,7 @@ import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.hotel.HotelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,8 @@ public class AdminHotelController {
     private final HotelService hotelService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<HotelResponse>> createNewHotel(@RequestBody HotelRequest hotelRequest) {
+    public ResponseEntity<ApiResponse<HotelResponse>> createNewHotel(
+            @Valid @RequestBody HotelRequest hotelRequest) {
 
         log.info("Attempting to create hotel with name: {}", hotelRequest.getName());
         HotelResponse hotelResponse = hotelService.createNewHotel(hotelRequest);
@@ -39,7 +41,7 @@ public class AdminHotelController {
 
     @PatchMapping("/{hotelId}/activation")
     public ResponseEntity<ApiResponse<Void>> updateHotelActivationById(
-            @PathVariable UUID hotelId, @RequestParam boolean active) {
+            @PathVariable UUID hotelId, @Valid @RequestParam boolean active) {
 
         log.info("Attempting to update hotel activation with id: {}", hotelId);
         hotelService.updateHotelActivation(hotelId, active);
@@ -49,7 +51,7 @@ public class AdminHotelController {
 
     @PutMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<HotelResponse>> updateHotelById(
-            @PathVariable UUID hotelId, @RequestBody HotelRequest hotelRequest) {
+            @PathVariable UUID hotelId, @Valid @RequestBody HotelRequest hotelRequest) {
 
         log.info("Attempting to update hotel with id: {}", hotelId);
         HotelResponse hotelResponse = hotelService.updateHotelById(hotelId, hotelRequest);

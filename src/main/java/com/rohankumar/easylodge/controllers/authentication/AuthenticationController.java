@@ -8,6 +8,8 @@ import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.authentication.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +37,8 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signUp")
-    public ResponseEntity<ApiResponse<UserResponse>> signUp(@RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<ApiResponse<UserResponse>> signUp(
+            @Valid @RequestBody SignUpRequest signUpRequest) {
 
         log.info("Attempting to sign up user with email: {}", signUpRequest.getEmail());
         UserResponse userResponse = authenticationService.signUp(signUpRequest);
@@ -44,7 +47,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> login(@RequestBody AuthenticationRequest authenticationRequest) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> login(
+            @Valid @RequestBody AuthenticationRequest authenticationRequest) {
 
         log.info("Attempting to login user with email: {}", authenticationRequest.getEmail());
         AuthenticationResponse authenticationResponse = authenticationService.login(authenticationRequest);
@@ -64,7 +68,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/renewToken")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> renewAccessToken(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> renewAccessToken(
+            @NotNull HttpServletRequest request) {
 
         String refreshToken = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
                 .filter(c -> "refreshToken".equals(c.getName()))

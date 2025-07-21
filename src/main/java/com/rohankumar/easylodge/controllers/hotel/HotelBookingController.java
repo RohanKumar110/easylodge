@@ -8,6 +8,7 @@ import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.payment.PaymentResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.booking.BookingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,8 @@ public class HotelBookingController {
     private final BookingService bookingService;
 
     @PostMapping("/init")
-    public ResponseEntity<ApiResponse<BookingResponse>> initializeBooking(@RequestBody BookingRequest bookingRequest) {
+    public ResponseEntity<ApiResponse<BookingResponse>> initializeBooking(
+            @Valid @RequestBody BookingRequest bookingRequest) {
 
         log.info("Attempting to initialize booking for hotel: {}", bookingRequest.getHotelId());
         BookingResponse bookingResponse = bookingService.initializeBooking(bookingRequest);
@@ -35,7 +37,7 @@ public class HotelBookingController {
 
     @PostMapping("/{bookingId}/guests")
     public ResponseEntity<ApiResponse<List<GuestResponse>>> createGuests(
-            @PathVariable UUID bookingId, @RequestBody List<GuestRequest> guests) {
+            @PathVariable UUID bookingId, @Valid @RequestBody List<GuestRequest> guests) {
 
         log.info("Attempting to create guests for booking: {}", bookingId);
         List<GuestResponse> guestResponseList = bookingService.createGuests(bookingId, guests);
