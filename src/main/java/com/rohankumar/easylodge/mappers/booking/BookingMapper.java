@@ -23,7 +23,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public static BookingResponse toResponse( Booking booking) {
+    public static BookingResponse toResponse(Booking booking) {
 
         if(booking == null) return null;
 

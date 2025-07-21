@@ -159,6 +159,24 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<BookingResponse> getAllBookingsByHotelId(UUID hotelId) {
+
+        log.info("Getting all bookings for hotel with id: {}", hotelId);
+
+        Hotel fetchedHotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
+
+        List<Booking> bookings = bookingRepository.findByHotel(fetchedHotel);
+
+        log.info("Bookings found successfully");
+        log.info("Total bookings found: {}", bookings.size());
+
+        return bookings.stream()
+                .map(BookingMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public PaymentResponse initiatePayment(UUID id) {
 

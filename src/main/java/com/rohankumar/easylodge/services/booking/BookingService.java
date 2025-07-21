@@ -20,6 +20,8 @@ public interface BookingService {
 
     BookingStatusResponse getBookingStatus(UUID id);
 
+    List<BookingResponse> getAllBookingsByHotelId(UUID hotelId);
+
     PaymentResponse initiatePayment(UUID id);
 
     void capturePayment(Event event);

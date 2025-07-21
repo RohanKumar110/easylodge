@@ -1,8 +1,10 @@
 package com.rohankumar.easylodge.controllers.admin.hotel;
 
+import com.rohankumar.easylodge.dtos.booking.BookingResponse;
 import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
+import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.hotel.HotelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class AdminHotelController {
 
     private final HotelService hotelService;
+    private final BookingService bookingService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<HotelResponse>> createNewHotel(
@@ -48,6 +51,16 @@ public class AdminHotelController {
         List<HotelResponse> hotelResponseList = hotelService.getAllHotels();
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotels Fetched Successfully", hotelResponseList));
+    }
+
+    @GetMapping("/{hotelId}/bookings")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getAllBookingsByHotelId(
+            @PathVariable UUID hotelId) {
+
+        log.info("Attempting to get all bookings for hotel with id: {}", hotelId);
+        List<BookingResponse> bookingResponseList = bookingService.getAllBookingsByHotelId(hotelId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Bookings Fetched Successfully", bookingResponseList));
     }
 
     @PatchMapping("/{hotelId}/activation")
