@@ -3,6 +3,7 @@ package com.rohankumar.easylodge.controllers.admin.hotel;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
 import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
+import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.hotel.HotelService;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +44,18 @@ public class AdminHotelController {
         HotelResponse hotelResponse =  hotelService.getHotelById(hotelId);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Fetched Successfully", hotelResponse));
+    }
+
+    @GetMapping("/{hotelId}/reports")
+    public ResponseEntity<ApiResponse<HotelReportResponse>> getHotelReportById(
+            @PathVariable UUID hotelId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+
+        log.info("Attempting to get hotel report with id: {}", hotelId);
+        HotelReportResponse hotelReportResponse = hotelService.getHotelReportById(hotelId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Hotel Report Fetched Successfully", hotelReportResponse));
     }
 
     @GetMapping

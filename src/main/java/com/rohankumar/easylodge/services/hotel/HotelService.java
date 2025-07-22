@@ -4,7 +4,9 @@ import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
+import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +17,8 @@ public interface HotelService {
     HotelResponse getHotelById(UUID id);
 
     HotelInfoResponse getHotelInfo(UUID id, HotelInfoRequest hotelInfoRequest);
+
+    HotelReportResponse getHotelReportById(UUID id, LocalDate startDate, LocalDate endDate);
 
     List<HotelResponse> getAllHotels();
 
