@@ -52,6 +52,18 @@ public class AdminRoomController {
                 ApiResponse.success(HttpStatus.OK.value(), "Rooms Fetched Successfully", rooms));
     }
 
+    @PutMapping("/{roomId}")
+    public ResponseEntity<ApiResponse<RoomResponse>> updateRoomById(
+            @PathVariable UUID hotelId,
+            @PathVariable UUID roomId,
+            @Valid @RequestBody RoomRequest roomRequest) {
+
+        log.info("Attempting to update room with id: {}", roomId);
+        RoomResponse roomResponse = roomService.updateRoomById(hotelId, roomId, roomRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Room Updated Successfully", roomResponse));
+    }
+
     @DeleteMapping("/{roomId}")
     public ResponseEntity<ApiResponse<Void>> deleteRoomById(
             @PathVariable UUID hotelId, @PathVariable UUID roomId) {

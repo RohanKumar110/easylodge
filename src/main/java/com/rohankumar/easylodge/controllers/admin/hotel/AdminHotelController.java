@@ -50,7 +50,7 @@ public class AdminHotelController {
     @GetMapping("/{hotelId}/reports")
     public ResponseEntity<ApiResponse<HotelReportResponse>> getHotelReportById(
             @PathVariable UUID hotelId,
-            @RequestParam String bookingStatus,
+            @RequestParam BookingStatus bookingStatus,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate) {
 
