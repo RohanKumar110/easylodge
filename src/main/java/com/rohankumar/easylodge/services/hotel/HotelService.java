@@ -5,6 +5,7 @@ import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
+import com.rohankumar.easylodge.enums.booking.BookingStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,7 +19,7 @@ public interface HotelService {
 
     HotelInfoResponse getHotelInfo(UUID id, HotelInfoRequest hotelInfoRequest);
 
-    HotelReportResponse getHotelReportById(UUID id, LocalDate startDate, LocalDate endDate);
+    HotelReportResponse getHotelReportById(UUID id, BookingStatus bookingStatus,LocalDate startDate, LocalDate endDate);
 
     List<HotelResponse> getAllHotels();
 

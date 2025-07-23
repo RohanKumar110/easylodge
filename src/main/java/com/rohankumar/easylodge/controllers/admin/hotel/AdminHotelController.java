@@ -5,6 +5,7 @@ import com.rohankumar.easylodge.dtos.hotel.HotelRequest;
 import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
+import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.hotel.HotelService;
 import jakarta.validation.Valid;
@@ -49,11 +50,13 @@ public class AdminHotelController {
     @GetMapping("/{hotelId}/reports")
     public ResponseEntity<ApiResponse<HotelReportResponse>> getHotelReportById(
             @PathVariable UUID hotelId,
+            @RequestParam String bookingStatus,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate) {
 
         log.info("Attempting to get hotel report with id: {}", hotelId);
-        HotelReportResponse hotelReportResponse = hotelService.getHotelReportById(hotelId, startDate, endDate);
+        HotelReportResponse hotelReportResponse = hotelService
+                .getHotelReportById(hotelId, bookingStatus, startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Report Fetched Successfully", hotelReportResponse));
     }

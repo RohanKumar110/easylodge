@@ -93,7 +93,8 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public HotelReportResponse getHotelReportById(UUID id, LocalDate startDate, LocalDate endDate) {
+    public HotelReportResponse getHotelReportById(
+            UUID id, BookingStatus bookingStatus, LocalDate startDate, LocalDate endDate) {
 
         log.info("Getting the hotel report for hotel with id: {}", id);
 
@@ -116,7 +117,7 @@ public class HotelServiceImpl implements HotelService {
 
         log.info("Getting the hotel report");
         HotelReportResponse hotelReportResponse = bookingRepository.findHotelReportByStatusAndDateRange(
-                fetchedHotel, BookingStatus.CONFIRMED, startDateTime, endDateTime);
+                fetchedHotel, bookingStatus, startDateTime, endDateTime);
 
         log.info("Hotel report fetched successfully with id: {}", fetchedHotel.getId());
 
