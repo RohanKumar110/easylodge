@@ -2,12 +2,14 @@ package com.rohankumar.easylodge.services.inventory.impl;
 
 import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
+import com.rohankumar.easylodge.dtos.inventory.InventoryFilterRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
+import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.inventory.InventoryMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelDailyPriceRepository;
@@ -99,10 +101,10 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public PaginationResponse<InventoryResponse> getAllInventoriesByRoom(
-            UUID roomId, InventoryRequest inventoryRequest) {
+            UUID roomId, InventoryFilterRequest inventoryFilterRequest) {
 
-        LocalDate startDate = inventoryRequest.getStartDate();
-        LocalDate endDate = inventoryRequest.getEndDate();
+        LocalDate startDate = inventoryFilterRequest.getStartDate();
+        LocalDate endDate = inventoryFilterRequest.getEndDate();
 
         log.info("Getting all the inventories for room with id :{} from dates: {} to {}", roomId, startDate, endDate);
 
@@ -110,8 +112,8 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id : " + roomId));
         log.info("Room found successfully with id: {}", fetchedRoom.getId());
 
-        Pageable pageable = PageRequest.of(inventoryRequest.getPageNo(), inventoryRequest.getPageSize());
-        log.info("Getting {} inventories for page: {}", inventoryRequest.getPageSize(), inventoryRequest.getPageNo());
+        Pageable pageable = PageRequest.of(inventoryFilterRequest.getPageNo(), inventoryFilterRequest.getPageSize());
+        log.info("Getting {} inventories for page: {}", inventoryFilterRequest.getPageSize(), inventoryFilterRequest.getPageNo());
 
         Page<Inventory> inventoryPage = inventoryRepository
                 .findByRoomAndDateBetween(fetchedRoom, startDate, endDate, pageable);
@@ -182,12 +184,36 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    public void updateInventoriesByRoom(UUID roomId, InventoryRequest inventoryRequest) {
+
+        log.info("Updating inventories by room with id {} from {} to {}",
+                roomId, inventoryRequest.getStartDate(), inventoryRequest.getEndDate());
+
+        if (!inventoryRequest.getStartDate().isBefore(inventoryRequest.getEndDate())) {
+            throw new BadRequestException("Start date must be before end date");
+        }
+
+        Room fetchedRoom = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id : " + roomId));
+        log.info("Room found successfully with id: {}", fetchedRoom.getId());
+
+        int updatedCount = inventoryRepository.updateSurgeFactorAndClosedByRoomAndDateRange(
+                fetchedRoom, inventoryRequest.getStartDate(), inventoryRequest.getEndDate(),
+                inventoryRequest.getSurgeFactor(), inventoryRequest.getClosed());
+
+        log.info("Total inventories updated: {}", updatedCount);
+        log.info("Inventories updated successfully");
+    }
+
+    @Override
+    @Transactional
     public void deleteAllRoomInventories(Room room) {
 
         log.info("Deleting inventories for room with id: {}", room.getId());
 
-        inventoryRepository.deleteByRoom(room);
+        int deletedCount = inventoryRepository.deleteByRoom(room);
 
+        log.info("Total inventories deleted: {}", deletedCount);
         log.info("Inventories deleted successfully for room with id: {}", room.getId());
     }
 }

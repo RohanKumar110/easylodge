@@ -1,20 +1,19 @@
 package com.rohankumar.easylodge.dtos.inventory;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Digits;
+import com.rohankumar.easylodge.utils.constants.AppConstants;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryRequest {
+public class InventoryFilterRequest {
 
     @NotNull(message = "Start date is required")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -24,10 +23,6 @@ public class InventoryRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    @NotNull(message = "Surge factor is required")
-    @Digits(integer = 3, fraction = 2, message = "Surge factor must be a decimal with up to 3 digits and 2 decimal places")
-    private BigDecimal surgeFactor;
-
-    @NotNull(message = "Closed status is required")
-    private Boolean closed;
+    private Integer pageNo = AppConstants.PAGE_NO;
+    private Integer pageSize = AppConstants.PAGE_SIZE;
 }

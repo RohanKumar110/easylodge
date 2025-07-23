@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
 
     @Modifying
     @Query("DELETE FROM Inventory i WHERE i.room = :room")
-    void deleteByRoom(Room room);
+    int deleteByRoom(Room room);
 
     @Query("""
         SELECT new com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse(i.hotel, MIN(i.price))
@@ -146,5 +147,20 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
             LocalDate startDate,
             LocalDate endDate,
             Integer roomsCount
+    );
+
+    @Query("""
+        UPDATE Inventory i
+        SET i.surgeFactor = :surgeFactor, i.closed = :closed
+        WHERE i.room = :room
+              AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
+    """)
+    @Modifying
+    int updateSurgeFactorAndClosedByRoomAndDateRange(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            BigDecimal surgeFactor,
+            Boolean closed
     );
 }
