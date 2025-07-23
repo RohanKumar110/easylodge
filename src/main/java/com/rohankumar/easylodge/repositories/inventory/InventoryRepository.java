@@ -88,6 +88,20 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
         SELECT i
         FROM Inventory i
         WHERE i.room = :room
+            AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
+        ORDER BY i.inventoryDate DESC
+    """)
+    Page<Inventory> findByRoomAndDateBetween(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT i
+        FROM Inventory i
+        WHERE i.room = :room
              AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
              AND (i.totalRoomsCount - i.bookedCount) >= :roomsCount
              AND i.closed = FALSE

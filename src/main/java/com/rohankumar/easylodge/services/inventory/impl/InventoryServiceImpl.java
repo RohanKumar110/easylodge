@@ -1,16 +1,18 @@
 package com.rohankumar.easylodge.services.inventory.impl;
 
-import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
 import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
+import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;
+import com.rohankumar.easylodge.dtos.inventory.InventoryResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
-import com.rohankumar.easylodge.entities.hotel.HotelDailyPrice;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
-import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
+import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
+import com.rohankumar.easylodge.mappers.inventory.InventoryMapper;
 import com.rohankumar.easylodge.repositories.hotel.HotelDailyPriceRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
+import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Value("${app.inventory.batch-size}")
     private Integer inventoryBatchSize;
 
+    private final RoomRepository roomRepository;
     private final InventoryRepository inventoryRepository;
     private final HotelDailyPriceRepository dailyPriceRepository;
 
@@ -95,10 +98,28 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public List<Inventory> findByHotelAndDates(Hotel hotel, LocalDate startDate, LocalDate endDate) {
+    public PaginationResponse<InventoryResponse> getAllInventoriesByRoom(
+            UUID roomId, InventoryRequest inventoryRequest) {
 
-        log.info("Getting inventories for hotels from dates: {} to {}", startDate, endDate);
-        return inventoryRepository.findByHotelAndDateBetween(hotel, startDate, endDate);
+        LocalDate startDate = inventoryRequest.getStartDate();
+        LocalDate endDate = inventoryRequest.getEndDate();
+
+        log.info("Getting all the inventories for room with id :{} from dates: {} to {}", roomId, startDate, endDate);
+
+        Room fetchedRoom = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id : " + roomId));
+        log.info("Room found successfully with id: {}", fetchedRoom.getId());
+
+        Pageable pageable = PageRequest.of(inventoryRequest.getPageNo(), inventoryRequest.getPageSize());
+        log.info("Getting {} inventories for page: {}", inventoryRequest.getPageSize(), inventoryRequest.getPageNo());
+
+        Page<Inventory> inventoryPage = inventoryRepository
+                .findByRoomAndDateBetween(fetchedRoom, startDate, endDate, pageable);
+
+        log.info("Inventories fetched successfully");
+        log.info("Total Inventories found: {}", inventoryPage.getTotalElements());
+
+        return PaginationResponse.makeResponse(inventoryPage, InventoryMapper::toResponse);
     }
 
     @Override
