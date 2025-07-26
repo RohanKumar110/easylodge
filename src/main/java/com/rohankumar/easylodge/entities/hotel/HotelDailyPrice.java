@@ -4,7 +4,6 @@ import com.rohankumar.easylodge.entities.common.DateAudit;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;

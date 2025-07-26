@@ -1,7 +1,6 @@
 package com.rohankumar.easylodge.dtos.wrapper;
 
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Getter

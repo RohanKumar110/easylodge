@@ -4,7 +4,6 @@ import com.rohankumar.easylodge.dtos.hotel.HotelResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
 import lombok.*;
-
 import java.math.BigDecimal;
 
 @Getter

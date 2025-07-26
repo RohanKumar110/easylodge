@@ -6,7 +6,6 @@ import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

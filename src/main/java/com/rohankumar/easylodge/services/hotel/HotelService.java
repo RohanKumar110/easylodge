@@ -6,7 +6,6 @@ import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;

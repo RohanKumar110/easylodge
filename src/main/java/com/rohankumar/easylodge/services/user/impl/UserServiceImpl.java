@@ -6,7 +6,6 @@ import com.rohankumar.easylodge.repositories.user.UserRepository;
 import com.rohankumar.easylodge.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Slf4j

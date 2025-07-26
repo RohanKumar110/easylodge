@@ -9,7 +9,6 @@ import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;

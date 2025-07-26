@@ -1,7 +1,6 @@
 package com.rohankumar.easylodge.dtos.hotel;
 
 import lombok.*;
-
 import java.util.UUID;
 
 @Getter

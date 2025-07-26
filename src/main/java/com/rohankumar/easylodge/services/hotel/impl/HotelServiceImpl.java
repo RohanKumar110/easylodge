@@ -6,11 +6,8 @@ import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoRequest;
 import com.rohankumar.easylodge.dtos.hotel.info.HotelInfoResponse;
 import com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse;
 import com.rohankumar.easylodge.dtos.room.RoomResponse;
-import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.common.ContactInfo;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
-import com.rohankumar.easylodge.entities.inventory.Inventory;
-import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
@@ -25,14 +22,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
