@@ -150,6 +150,19 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     );
 
     @Query("""
+        SELECT i
+        FROM Inventory i
+        WHERE i.room = :room
+              AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
+    """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    void lockInventoryForUpdate(
+            Room room,
+            LocalDate startDate,
+            LocalDate endDate
+    );
+
+    @Query("""
         UPDATE Inventory i
         SET i.surgeFactor = :surgeFactor, i.closed = :closed
         WHERE i.room = :room

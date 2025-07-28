@@ -137,7 +137,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         LocalDate now = LocalDate.now();
         LocalDate maxCachedDate = now.plusDays(90);
-        Long requiredNights = ChronoUnit.DAYS.between(searchRequest.getStartDate(), searchRequest.getEndDate());
+        long requiredNights = ChronoUnit.DAYS.between(searchRequest.getStartDate(), searchRequest.getEndDate());
 
         Page<HotelPriceResponse> hotelResponsePage;
         if (!searchRequest.getStartDate().isBefore(now) &&
@@ -186,16 +186,21 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public void updateInventoriesByRoom(UUID roomId, InventoryRequest inventoryRequest) {
 
-        log.info("Updating inventories by room with id {} from {} to {}",
-                roomId, inventoryRequest.getStartDate(), inventoryRequest.getEndDate());
+        LocalDate startDate = inventoryRequest.getStartDate();
+        LocalDate endDate = inventoryRequest.getEndDate();
 
-        if (!inventoryRequest.getStartDate().isBefore(inventoryRequest.getEndDate())) {
+        log.info("Updating inventories by room with id {} from {} to {}",
+                roomId, startDate, endDate);
+
+        if (!startDate.isBefore(endDate)) {
             throw new BadRequestException("Start date must be before end date");
         }
 
         Room fetchedRoom = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id : " + roomId));
         log.info("Room found successfully with id: {}", fetchedRoom.getId());
+
+        inventoryRepository.lockInventoryForUpdate(fetchedRoom, startDate, endDate);
 
         int updatedCount = inventoryRepository.updateSurgeFactorAndClosedByRoomAndDateRange(
                 fetchedRoom, inventoryRequest.getStartDate(), inventoryRequest.getEndDate(),
