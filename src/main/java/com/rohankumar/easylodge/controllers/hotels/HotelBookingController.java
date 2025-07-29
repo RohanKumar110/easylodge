@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.controllers.hotel;
+package com.rohankumar.easylodge.controllers.hotels;
 
 import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;

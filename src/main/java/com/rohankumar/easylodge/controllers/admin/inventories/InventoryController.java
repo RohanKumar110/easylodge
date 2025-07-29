@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.controllers.admin.inventory;
+package com.rohankumar.easylodge.controllers.admin.inventories;
 
 import com.rohankumar.easylodge.dtos.inventory.InventoryFilterRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;

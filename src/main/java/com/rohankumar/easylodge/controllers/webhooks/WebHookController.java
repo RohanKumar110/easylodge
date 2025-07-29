@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.controllers.webhook;
+package com.rohankumar.easylodge.controllers.webhooks;
 
 import com.rohankumar.easylodge.services.booking.BookingService;
 import com.stripe.exception.SignatureVerificationException;

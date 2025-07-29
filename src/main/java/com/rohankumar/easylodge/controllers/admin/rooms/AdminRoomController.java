@@ -1,4 +1,4 @@
-package com.rohankumar.easylodge.controllers.admin.room;
+package com.rohankumar.easylodge.controllers.admin.rooms;
 
 import com.rohankumar.easylodge.dtos.room.RoomRequest;
 import com.rohankumar.easylodge.dtos.room.RoomResponse;
