@@ -48,10 +48,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .name(signUpRequest.getName())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .gender(signUpRequest.getGender())
                 .roles(Set.of(Role.GUEST))
                 .build();
-
 
         User savedUser = userRepository.save(newUser);
         log.info("User signed up successfully with email: {}", signUpRequest.getEmail());

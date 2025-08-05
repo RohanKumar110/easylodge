@@ -3,6 +3,8 @@ package com.rohankumar.easylodge.dtos.user;
 import com.rohankumar.easylodge.enums.gender.Gender;
 import com.rohankumar.easylodge.enums.role.Role;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,5 +19,8 @@ public class UserResponse {
     private String name;
     private String email;
     private Gender gender;
+    private LocalDate dateOfBirth;
+    private String contactNumber;
+    private String profilePicture;
     private Set<Role> roles;
 }

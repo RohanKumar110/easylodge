@@ -9,6 +9,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,9 +36,14 @@ public class User extends DateAudit implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    private LocalDate dateOfBirth;
+
+    private String contactNumber;
+
+    private String profilePicture;
 
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles")

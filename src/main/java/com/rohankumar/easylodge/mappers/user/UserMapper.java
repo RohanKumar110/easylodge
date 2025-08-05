@@ -14,6 +14,9 @@ public class UserMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .contactNumber(user.getContactNumber())
+                .profilePicture(user.getProfilePicture())
                 .roles(user.getRoles())
                 .build();
     }

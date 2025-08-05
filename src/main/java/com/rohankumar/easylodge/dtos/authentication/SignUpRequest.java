@@ -28,7 +28,4 @@ public class SignUpRequest {
             message = "Password must be 8-16 characters long and contain at least one number"
     )
     private String password;
-
-    @NotNull(message = "Gender is required")
-    private Gender gender;
 }
