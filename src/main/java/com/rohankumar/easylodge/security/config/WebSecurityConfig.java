@@ -46,6 +46,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasRole(Role.HOTEL_MANAGER.name())
                         .requestMatchers("/bookings/**").authenticated()
+                        .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/hotels/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/webhook/**").permitAll()

@@ -156,7 +156,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
               AND (i.inventoryDate >= :startDate AND i.inventoryDate <= :endDate)
     """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    void lockInventoryForUpdate(
+    List<Inventory> lockInventoryForUpdate(
             Room room,
             LocalDate startDate,
             LocalDate endDate
