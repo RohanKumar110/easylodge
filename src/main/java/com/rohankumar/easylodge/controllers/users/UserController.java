@@ -1,19 +1,22 @@
 package com.rohankumar.easylodge.controllers.users;
 
+import com.rohankumar.easylodge.dtos.booking.BookingResponse;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.dtos.user.profile.UserProfileRequest;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
+import com.rohankumar.easylodge.services.booking.BookingService;
 import com.rohankumar.easylodge.services.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.UUID;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,6 +25,16 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final BookingService bookingService;
+
+    @GetMapping("/me/bookings")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getUserBookings() {
+
+        log.info("Attempting to get current user bookings");
+        List<BookingResponse> bookingResponseList = bookingService.getUserBookings();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "User Bookings Fetched Successfully", bookingResponseList));
+    }
 
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid UserProfileRequest profileRequest) {

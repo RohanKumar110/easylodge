@@ -21,6 +21,8 @@ public interface BookingService {
 
     List<BookingResponse> getAllBookingsByHotelId(UUID hotelId);
 
+    List<BookingResponse> getUserBookings();
+
     PaymentResponse initiatePayment(UUID id);
 
     void capturePayment(Event event);

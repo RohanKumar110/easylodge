@@ -177,6 +177,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<BookingResponse> getUserBookings() {
+
+        User currentUser = SecurityUtils.getCurrentUser();
+        log.info("Getting all bookings for user with id: {}", currentUser.getId());
+
+        List<Booking> bookings = bookingRepository.findByUser(currentUser);
+        log.info("Bookings found successfully");
+        log.info("Total bookings found: {}", bookings.size());
+
+        return bookings.stream()
+                .map(BookingMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public PaymentResponse initiatePayment(UUID id) {
 
