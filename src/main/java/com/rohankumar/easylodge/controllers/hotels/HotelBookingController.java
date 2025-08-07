@@ -37,10 +37,10 @@ public class HotelBookingController {
 
     @PostMapping("/{bookingId}/guests")
     public ResponseEntity<ApiResponse<List<GuestResponse>>> createGuests(
-            @PathVariable UUID bookingId, @Valid @RequestBody List<GuestRequest> guests) {
+            @PathVariable UUID bookingId, @RequestBody List<UUID> guestIdList) {
 
         log.info("Attempting to create guests for booking: {}", bookingId);
-        List<GuestResponse> guestResponseList = bookingService.createGuests(bookingId, guests);
+        List<GuestResponse> guestResponseList = bookingService.createGuests(bookingId, guestIdList);
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(HttpStatus.OK.value(), "Guests Created Successfully", guestResponseList));
     }

@@ -111,9 +111,14 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public List<GuestResponse> createGuests(UUID id, List<GuestRequest> guests) {
+    public List<GuestResponse> createGuests(UUID id, List<UUID> guestIdList) {
 
         log.info("Creating guests for booking with id: {}", id);
+
+        if(guestIdList == null || guestIdList.isEmpty()) {
+            log.info("Guest Id List is null or empty");
+            throw new BadRequestException("Guest Ids are required");
+        }
 
         Booking fetchedBooking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
@@ -128,15 +133,10 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Booking is not under reserved state, guests cannot be added");
         }
 
-        guests.forEach(guestRequest -> {
+        guestIdList.forEach(guestId -> {
 
-            Guest guest = Guest.builder()
-                    .name(guestRequest.getName())
-                    .gender(guestRequest.getGender())
-                    .age(guestRequest.getAge())
-                    .booking(fetchedBooking)
-                    .user(SecurityUtils.getCurrentUser())
-                    .build();
+            Guest guest = guestRepository.findById(guestId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
 
             fetchedBooking.getGuests().add(guest);
         });
