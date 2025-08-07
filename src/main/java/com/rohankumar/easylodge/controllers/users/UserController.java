@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -32,7 +33,13 @@ public class UserController {
                 ApiResponse.success(HttpStatus.OK.value(), "User Bookings Fetched Successfully", bookingResponseList));
     }
 
-    // TODO: get user profile
+    public ResponseEntity<ApiResponse<UserResponse>> getUserProfile() {
+
+        log.info("Attempting to get current user profile");
+        UserResponse userResponse = userService.getUserProfile();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "User Profile Fetched Successfully", userResponse));
+    }
 
     @PatchMapping("/profile")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid UserProfileRequest profileRequest) {

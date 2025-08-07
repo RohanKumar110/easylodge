@@ -4,6 +4,7 @@ import com.rohankumar.easylodge.dtos.wrapper.ErrorResponse;
 import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.exceptions.TokenExpiredException;
+import com.rohankumar.easylodge.exceptions.UnAuthorisedException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -117,25 +118,34 @@ public class GlobalExceptionHandler {
         log.warn("Jwt Error: {}", ex.getMessage());
 
         return ResponseEntity.status(UNAUTHORIZED).body(
-                ErrorResponse.error(UNAUTHORIZED.value(), "Not Authorized"));
+                ErrorResponse.error(UNAUTHORIZED.value(), "Invalid or UnAuthorized Token"));
+    }
+
+    @ExceptionHandler(UnAuthorisedException.class)
+    public ResponseEntity<ErrorResponse> handleUnAuthorizedException(UnAuthorisedException ex) {
+
+        log.warn("UnAuthorized Error: {}", ex.getMessage());
+
+        return ResponseEntity.status(UNAUTHORIZED).body(
+                ErrorResponse.error(UNAUTHORIZED.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex, HttpServletRequest req) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
 
         log.warn("Authentication Error: {}", ex.getMessage());
 
         return ResponseEntity.status(UNAUTHORIZED).body(
-                ErrorResponse.error(UNAUTHORIZED.value(), "Authentication Required"));
+                ErrorResponse.error(UNAUTHORIZED.value(), "Login Required"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
 
-        log.info("Access Denied Error: "+ex.getMessage());
+        log.warn("Access Denied Error: "+ex.getMessage());
+
         return ResponseEntity.status(FORBIDDEN).body(
-                ErrorResponse.error(FORBIDDEN.value(), "Access Denied"));
+                ErrorResponse.error(FORBIDDEN.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

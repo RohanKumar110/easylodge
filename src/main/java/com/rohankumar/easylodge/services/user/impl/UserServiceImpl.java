@@ -4,6 +4,7 @@ import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.dtos.user.profile.UserProfileRequest;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
+import com.rohankumar.easylodge.exceptions.UnAuthorisedException;
 import com.rohankumar.easylodge.mappers.user.UserMapper;
 import com.rohankumar.easylodge.repositories.user.UserRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
@@ -26,6 +27,19 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    }
+
+    @Override
+    public UserResponse getUserProfile() {
+
+       log.info("Getting current user profile");
+
+       User currentUser = SecurityUtils.getCurrentUser();
+       if(currentUser == null) {
+            throw new UnAuthorisedException("Not authenticated");
+       }
+
+
     }
 
     @Override

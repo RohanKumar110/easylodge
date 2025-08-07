@@ -8,5 +8,7 @@ public interface UserService {
 
     User findUserByEmail(String email);
 
+    UserResponse getUserProfile();
+
     UserResponse updateUserProfile(UserProfileRequest profileRequest);
 }
