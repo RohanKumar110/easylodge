@@ -33,6 +33,7 @@ public class UserController {
                 ApiResponse.success(HttpStatus.OK.value(), "User Bookings Fetched Successfully", bookingResponseList));
     }
 
+    @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserResponse>> getUserProfile() {
 
         log.info("Attempting to get current user profile");

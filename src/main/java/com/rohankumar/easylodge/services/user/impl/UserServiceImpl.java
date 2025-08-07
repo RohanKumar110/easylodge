@@ -39,7 +39,8 @@ public class UserServiceImpl implements UserService {
             throw new UnAuthorisedException("Not authenticated");
        }
 
-
+       log.info("Current user profile fetched successfully");
+       return UserMapper.toResponse(currentUser);
     }
 
     @Override
