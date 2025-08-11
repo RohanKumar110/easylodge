@@ -1,10 +1,13 @@
 package com.rohankumar.easylodge.controllers.users;
 
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
+import com.rohankumar.easylodge.dtos.guest.GuestRequest;
+import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.dtos.user.profile.UserProfileRequest;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.booking.BookingService;
+import com.rohankumar.easylodge.services.guest.GuestService;
 import com.rohankumar.easylodge.services.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final GuestService guestService;
     private final BookingService bookingService;
 
     @GetMapping("/me/bookings")
@@ -49,5 +53,42 @@ public class UserController {
         UserResponse userResponse = userService.updateUserProfile(profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.success(HttpStatus.CREATED.value(), "User Profile Successfully", userResponse));
+    }
+
+    @PostMapping("/guests")
+    public ResponseEntity<ApiResponse<List<GuestResponse>>> createNewGuests(List<GuestRequest> guestRequestList) {
+
+        log.info("Attempting to create new guests for user");
+        List<GuestResponse> guestResponseList = guestService.createNewGuests(guestRequestList);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.success(HttpStatus.CREATED.value(), "Guests Created Successfully", guestResponseList));
+    }
+
+    @GetMapping("/guests")
+    public ResponseEntity<ApiResponse<List<GuestResponse>>> getAllGuests() {
+
+        log.info("Attempting to get current user guests");
+        List<GuestResponse> guestResponseList = guestService.getAllGuests();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Guests Created Successfully", guestResponseList));
+    }
+
+    @PutMapping("guests/{guestId}")
+    public ResponseEntity<ApiResponse<GuestResponse>> updateGuestById(@PathVariable UUID guestId,
+                                            @Valid @RequestBody GuestRequest guestRequest) {
+
+        log.info("Attempting to update guest with id: {}", guestId);
+        GuestResponse guestResponse = guestService.updateGuestById(guestId, guestRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Guest Updated Successfully", guestResponse));
+    }
+
+    @DeleteMapping("guests/{guestId}")
+    public ResponseEntity<ApiResponse<Void>> deleteGuest(@PathVariable UUID guestId) {
+
+        log.info("Attempting to delete guest with id: {}", guestId);
+        guestService.deleteGuestById(guestId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(HttpStatus.OK.value(), "Guest Deleted Successfully"));
     }
 }
