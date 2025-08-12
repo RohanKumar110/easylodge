@@ -29,7 +29,6 @@ public class HotelBrowseController {
     public ResponseEntity<ApiResponse<PaginationResponse<HotelPriceResponse>>> searchHotels(
             @Valid @ModelAttribute HotelSearchRequest searchRequest) {
 
-        // TODO: check for global response handler
         log.info("Attempting to search hotels for city: {}", searchRequest.getCity());
         PaginationResponse<HotelPriceResponse> paginationResponse = inventoryService.searchHotels(searchRequest);
         return ResponseEntity.status(HttpStatus.OK).body(

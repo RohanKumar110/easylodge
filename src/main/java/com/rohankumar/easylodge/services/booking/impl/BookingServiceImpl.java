@@ -3,7 +3,6 @@ package com.rohankumar.easylodge.services.booking.impl;
 import com.rohankumar.easylodge.dtos.booking.BookingRequest;
 import com.rohankumar.easylodge.dtos.booking.BookingResponse;
 import com.rohankumar.easylodge.dtos.booking.BookingStatusResponse;
-import com.rohankumar.easylodge.dtos.guest.GuestRequest;
 import com.rohankumar.easylodge.dtos.guest.GuestResponse;
 import com.rohankumar.easylodge.dtos.payment.PaymentRequest;
 import com.rohankumar.easylodge.dtos.payment.PaymentResponse;

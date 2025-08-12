@@ -1,6 +1,5 @@
 package com.rohankumar.easylodge.entities.guest;
 
-import com.rohankumar.easylodge.entities.booking.Booking;
 import com.rohankumar.easylodge.entities.common.DateAudit;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.gender.Gender;
