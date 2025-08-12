@@ -7,6 +7,9 @@ import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.room.Room;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public interface InventoryService {
@@ -20,6 +23,8 @@ public interface InventoryService {
     void changeInventoryAvailabilityByHotel(UUID hotelId, boolean closed);
 
     void updateInventoriesByRoom(UUID roomId, InventoryRequest inventoryRequest);
+
+    void updateInventoryByRoomAndFromDate(Room room, BigDecimal price, Integer totalRoomsCount, LocalDate fromDate);
 
     void deleteAllRoomInventories(Room room);
 }

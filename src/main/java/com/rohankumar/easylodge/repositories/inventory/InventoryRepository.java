@@ -176,4 +176,18 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
             BigDecimal surgeFactor,
             Boolean closed
     );
+
+    @Query("""
+        UPDATE Inventory i
+        SET i.price = :price, i.totalRoomsCount = :totalRoomsCount
+        WHERE i.room = :room
+          AND i.inventoryDate >= :fromDate
+    """)
+    @Modifying
+    int updateInventoryByRoomAndFromDate(
+            Room room,
+            BigDecimal price,
+            Integer totalRoomsCount,
+            LocalDate fromDate
+    );
 }

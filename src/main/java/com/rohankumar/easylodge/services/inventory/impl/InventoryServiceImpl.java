@@ -212,6 +212,20 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    public void updateInventoryByRoomAndFromDate(Room room, BigDecimal price, Integer totalRoomsCount, LocalDate fromDate) {
+
+        log.info("Updating inventories for room with id: {} from date: {}", room.getId(), fromDate);
+
+        int updatedCount =  inventoryRepository.updateInventoryByRoomAndFromDate(
+                room, price, totalRoomsCount, fromDate
+        );
+
+        log.info("Inventories updated successfully");
+        log.info("Total inventories updated: {}", updatedCount);
+    }
+
+    @Override
+    @Transactional
     public void deleteAllRoomInventories(Room room) {
 
         log.info("Deleting inventories for room with id: {}", room.getId());

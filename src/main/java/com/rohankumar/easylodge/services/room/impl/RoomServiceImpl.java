@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -79,6 +82,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional
     public RoomResponse updateRoomById(UUID hotelId, UUID roomId, RoomRequest roomRequest) {
 
         log.info("Updating the room with id: {}", roomId);
@@ -91,17 +95,36 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
         log.info("Room found successfully with id: {}", roomId);
 
-        if(roomRequest.getType() != null) fetchedRoom.setType(roomRequest.getType());
-        if(roomRequest.getBasePrice() != null) fetchedRoom.setBasePrice(roomRequest.getBasePrice());
-        if(roomRequest.getImages() != null) fetchedRoom.setImages(roomRequest.getImages());
-        if(roomRequest.getAmenities() != null) fetchedRoom.setAmenities(roomRequest.getAmenities());
-        if(roomRequest.getTotalRoomsCount() != null) fetchedRoom.setTotalRoomsCount(roomRequest.getTotalRoomsCount());
-        if(roomRequest.getCapacity() != null) fetchedRoom.setCapacity(roomRequest.getCapacity());
+        fetchedRoom.setType(roomRequest.getType());
+        fetchedRoom.setBasePrice(roomRequest.getBasePrice());
+        fetchedRoom.setTotalRoomsCount(roomRequest.getTotalRoomsCount());
+        fetchedRoom.setCapacity(roomRequest.getCapacity());
+
+        if(roomRequest.getImages() != null && roomRequest.getImages().length > 0)
+            fetchedRoom.setImages(roomRequest.getImages());
+        if(roomRequest.getAmenities() != null && roomRequest.getAmenities().length > 0)
+            fetchedRoom.setAmenities(roomRequest.getAmenities());
 
         Room updatedRoom = roomRepository.save(fetchedRoom);
         log.info("Room updated successfully with id: {}", roomId);
 
-        // TODO: update inventory price, totalRoomsCount and capacity for updated room
+        boolean priceChanged = roomRequest.getBasePrice() != null
+                && roomRequest.getBasePrice().compareTo(fetchedRoom.getBasePrice()) != 0;
+
+        boolean totalRoomsCountChanged = roomRequest.getTotalRoomsCount() != null
+                && !roomRequest.getTotalRoomsCount().equals(fetchedRoom.getTotalRoomsCount());
+
+        if (priceChanged || totalRoomsCountChanged) {
+
+            BigDecimal newPrice = priceChanged ? roomRequest.getBasePrice() : fetchedRoom.getBasePrice();
+            Integer newTotalRoomsCount = totalRoomsCountChanged ? roomRequest.getTotalRoomsCount() : fetchedRoom.getTotalRoomsCount();
+
+            LocalDate today = LocalDate.now();
+
+            inventoryService.updateInventoryByRoomAndFromDate(updatedRoom, newPrice, newTotalRoomsCount, today);
+
+            log.info("Inventories updated successfully");
+        }
 
         return RoomMapper.toResponse(updatedRoom);
     }
