@@ -16,6 +16,8 @@ import com.rohankumar.easylodge.repositories.hotel.HotelDailyPriceRepository;
 import com.rohankumar.easylodge.repositories.inventory.InventoryRepository;
 import com.rohankumar.easylodge.repositories.room.RoomRepository;
 import com.rohankumar.easylodge.services.inventory.InventoryService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,9 @@ public class InventoryServiceImpl implements InventoryService {
     @Value("${app.inventory.batch-size}")
     private Integer inventoryBatchSize;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final RoomRepository roomRepository;
     private final InventoryRepository inventoryRepository;
     private final HotelDailyPriceRepository dailyPriceRepository;
@@ -44,8 +49,6 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public void initializeRoomInventoriesForYear(Room room) {
-
-        // TODO: fix batch problem
 
         final Hotel hotel = room.getHotel();
         final UUID hotelId = hotel.getId();
@@ -58,15 +61,15 @@ public class InventoryServiceImpl implements InventoryService {
                 roomId, hotelId, start, end);
 
         Set<LocalDate> existingDates = new HashSet<>(
-                inventoryRepository.findExistingInventoryDates(hotelId, roomId, start, end.minusDays(1)));
+                inventoryRepository.findExistingInventoryDates(hotelId, roomId, start, end.minusDays(1))
+        );
 
         long created = 0;
         List<Inventory> batch = new ArrayList<>(inventoryBatchSize);
 
         for (LocalDate date = start; date.isBefore(end); date = date.plusDays(1)) {
 
-            if (existingDates.contains(date))
-                continue;
+            if (existingDates.contains(date)) continue;
 
             batch.add(Inventory.builder()
                     .hotel(hotel)
@@ -82,14 +85,20 @@ public class InventoryServiceImpl implements InventoryService {
                     .build());
 
             if (batch.size() == inventoryBatchSize) {
+
                 inventoryRepository.saveAll(batch);
+                entityManager.flush();
+                entityManager.clear();
                 batch.clear();
                 created += inventoryBatchSize;
             }
         }
 
         if (!batch.isEmpty()) {
+
             inventoryRepository.saveAll(batch);
+            entityManager.flush();
+            entityManager.clear();
             created += batch.size();
         }
 
