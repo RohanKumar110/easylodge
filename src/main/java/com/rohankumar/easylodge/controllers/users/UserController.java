@@ -56,7 +56,7 @@ public class UserController {
     }
 
     @PostMapping("/guests")
-    public ResponseEntity<ApiResponse<List<GuestResponse>>> createNewGuests(List<GuestRequest> guestRequestList) {
+    public ResponseEntity<ApiResponse<List<GuestResponse>>> createNewGuests(@RequestBody List<GuestRequest> guestRequestList) {
 
         log.info("Attempting to create new guests for user");
         List<GuestResponse> guestResponseList = guestService.createNewGuests(guestRequestList);
