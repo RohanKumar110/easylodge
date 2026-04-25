@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -92,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = Booking.builder()
                 .status(BookingStatus.RESERVED)
-                .amount(totalPrice)
+                .amount(totalPrice.setScale(2, RoundingMode.CEILING))
                 .hotel(fetchedHotel)
                 .room(fetchedRoom)
                 .user(SecurityUtils.getCurrentUser())

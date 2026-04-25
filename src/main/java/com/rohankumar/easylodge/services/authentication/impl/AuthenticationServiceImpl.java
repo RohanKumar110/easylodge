@@ -48,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .name(signUpRequest.getName())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .roles(Set.of(Role.GUEST))
+                .roles(Set.of(Role.GUEST, Role.HOTEL_MANAGER))
                 .build();
 
         User savedUser = userRepository.save(newUser);
