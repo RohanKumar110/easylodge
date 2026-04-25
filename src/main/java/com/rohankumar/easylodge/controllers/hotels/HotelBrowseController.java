@@ -35,10 +35,10 @@ public class HotelBrowseController {
                 ApiResponse.success(HttpStatus.OK.value(), "Hotels Fetched Successfully", paginationResponse));
     }
 
-    @PostMapping("/{hotelId}/info")
+    @GetMapping("/{hotelId}/info")
     public ResponseEntity<ApiResponse<HotelInfoResponse>> getHotelInfo(
             @PathVariable UUID hotelId,
-            @Valid @RequestBody HotelInfoRequest hotelInfoRequest) {
+            @Valid @ModelAttribute HotelInfoRequest hotelInfoRequest) {
 
         log.info("Attempting to get hotel info for hotel: {}", hotelId);
         HotelInfoResponse hotelInfoResponse = hotelService.getHotelInfo(hotelId, hotelInfoRequest);
