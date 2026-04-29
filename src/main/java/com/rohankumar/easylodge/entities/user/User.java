@@ -37,6 +37,7 @@ public class User extends DateAudit implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private Gender gender;
 
     private LocalDate dateOfBirth;

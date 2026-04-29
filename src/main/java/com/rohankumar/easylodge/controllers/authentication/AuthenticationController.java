@@ -36,7 +36,7 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponse>> signUp(
             @Valid @RequestBody SignUpRequest signUpRequest) {
 
@@ -55,9 +55,9 @@ public class AuthenticationController {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", authenticationResponse.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
+                .sameSite("None")
                 .path("/api/v1/auth/refresh")
-                .sameSite("Strict")
                 .maxAge(Duration.ofMillis(refreshTokenExpirationMillis))
                 .build();
 
