@@ -58,7 +58,7 @@ public class AuthenticationController {
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", authenticationResponse.getRefreshToken())
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/api/v1/auth/refresh")
                 .maxAge(Duration.ofMillis(refreshTokenExpirationMillis))
                 .build();
@@ -69,7 +69,7 @@ public class AuthenticationController {
                 ApiResponse.success(HttpStatus.OK.value(), "User Logged In Successfully", authenticationResponse));
     }
 
-    @PostMapping("/renewToken")
+    @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> renewAccessToken(
             @NotNull HttpServletRequest request) {
 
