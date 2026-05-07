@@ -6,8 +6,10 @@ import com.rohankumar.easylodge.dtos.authentication.SignUpRequest;
 import com.rohankumar.easylodge.dtos.user.UserResponse;
 import com.rohankumar.easylodge.dtos.wrapper.ApiResponse;
 import com.rohankumar.easylodge.services.authentication.AuthenticationService;
+import io.jsonwebtoken.lang.Strings;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -80,5 +82,22 @@ public class AuthenticationController {
         AuthenticationResponse authenticationResponse = authenticationService.renewAccessToken(refreshToken);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), "Token Renewed Successfully", authenticationResponse));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response) {
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", Strings.EMPTY)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), "Logged out successfully", null));
     }
 }
