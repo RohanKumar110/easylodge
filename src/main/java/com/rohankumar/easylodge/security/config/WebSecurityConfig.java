@@ -4,7 +4,6 @@ import com.rohankumar.easylodge.enums.role.Role;
 import com.rohankumar.easylodge.security.filters.JWTAuthenticationFilter;
 import com.rohankumar.easylodge.security.handlers.JWTAccessDeniedHandler;
 import com.rohankumar.easylodge.security.handlers.JWTAuthenticationEntryPointHandler;
-import com.rohankumar.easylodge.security.handlers.LogoutHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +29,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final LogoutHandler logoutHandler;
     private final UserDetailsService userDetailsService;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;;
     private final JWTAccessDeniedHandler jwtAccessDeniedHandler;
@@ -58,10 +56,7 @@ public class WebSecurityConfig {
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)
                 )
-                .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .addLogoutHandler(logoutHandler)
-                )
+                .logout(AbstractHttpConfigurer::disable)
                 .build();
     }
 

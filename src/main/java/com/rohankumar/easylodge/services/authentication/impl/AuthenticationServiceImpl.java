@@ -8,6 +8,7 @@ import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.role.Role;
 import com.rohankumar.easylodge.exceptions.BadRequestException;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
+import com.rohankumar.easylodge.exceptions.UnAuthorisedException;
 import com.rohankumar.easylodge.mappers.user.UserMapper;
 import com.rohankumar.easylodge.repositories.user.UserRepository;
 import com.rohankumar.easylodge.security.services.JWTService;
@@ -113,7 +114,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (!jwtService.isTokenValid(refreshToken, user)) {
             log.warn("Invalid or expired refresh token for user: {}", userEmail);
-            throw new BadRequestException("Invalid refresh token");
+            throw new UnAuthorisedException("Invalid refresh token");
         }
 
         log.info("Access token renewed successfully");
