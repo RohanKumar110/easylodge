@@ -5,6 +5,7 @@ import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryFilterRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryResponse;
+import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
@@ -148,9 +149,10 @@ public class InventoryServiceImpl implements InventoryService {
         LocalDate maxCachedDate = now.plusDays(90);
         long requiredNights = ChronoUnit.DAYS.between(searchRequest.getStartDate(), searchRequest.getEndDate());
 
+        boolean shouldUseCached = false;
         Page<HotelPriceResponse> hotelResponsePage;
         if (!searchRequest.getStartDate().isBefore(now) &&
-                !searchRequest.getEndDate().isAfter(maxCachedDate)) {
+                !searchRequest.getEndDate().isAfter(maxCachedDate) && shouldUseCached) {
 
             log.info("Using HotelDailyPrice for pricing — search is within 90 days");
             hotelResponsePage = dailyPriceRepository.findAvailableHotelsFromDailyPrice(
@@ -178,6 +180,31 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("Total Hotels Fetched: {}", hotelResponsePage.getTotalElements());
 
         return PaginationResponse.makeResponse(hotelResponsePage, hotelPriceResponse -> hotelPriceResponse);
+    }
+
+    @Override
+    public List<RoomResponse> findAvailableRoomsByHotel(UUID hotelId, LocalDate startDate, LocalDate endDate, Integer roomsCount) {
+
+        log.info("Getting available rooms for hotel: {} from {} to {} for {} rooms",
+                hotelId, startDate, endDate, roomsCount);
+
+        long requiredNights = ChronoUnit.DAYS.between(startDate, endDate);
+
+        log.info("Required nights calculated: {}", requiredNights);
+
+        List<RoomResponse> roomResponseList =
+                inventoryRepository.findAvailableRoomsByHotelId(
+                        hotelId,
+                        startDate,
+                        endDate,
+                        roomsCount,
+                        requiredNights
+                );
+
+        log.info("Rooms fetched successfully for hotel: {}. Total rooms found: {}",
+                hotelId, roomResponseList.size());
+
+        return roomResponseList;
     }
 
     @Override

@@ -12,7 +12,6 @@ import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import com.rohankumar.easylodge.exceptions.ResourceNotFoundException;
 import com.rohankumar.easylodge.mappers.hotel.HotelMapper;
-import com.rohankumar.easylodge.mappers.room.RoomMapper;
 import com.rohankumar.easylodge.repositories.booking.BookingRepository;
 import com.rohankumar.easylodge.repositories.hotel.HotelRepository;
 import com.rohankumar.easylodge.security.utils.SecurityUtils;
@@ -42,7 +41,7 @@ public class HotelServiceImpl implements HotelService {
         log.info("Creating the hotel with name: {}", hotelRequest.getName());
 
         Hotel hotelToSave = HotelMapper.toEntity(hotelRequest);
-        hotelToSave.setActive(false);
+        hotelToSave.setActive(true);
 
         hotelToSave.setOwner(SecurityUtils.getCurrentUser());
         Hotel savedHotel = hotelRepository.save(hotelToSave);
@@ -72,13 +71,16 @@ public class HotelServiceImpl implements HotelService {
         Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        List<RoomResponse> rooms = fetchedHotel.getRooms().stream()
-                .map(RoomMapper::toResponse)
-                .toList();
+        List<RoomResponse> roomResponseList = inventoryService.findAvailableRoomsByHotel(
+                id,
+                hotelInfoRequest.getStartDate(),
+                hotelInfoRequest.getEndDate(),
+                hotelInfoRequest.getRoomsCount()
+        );
 
         HotelInfoResponse hotelInfoResponse = new HotelInfoResponse();
         hotelInfoResponse.setHotel(HotelMapper.toResponse(fetchedHotel));
-        hotelInfoResponse.setRooms(rooms);
+        hotelInfoResponse.setRooms(roomResponseList);
 
         log.info("Hotel info fetched successfully with id: {}", fetchedHotel.getId());
 

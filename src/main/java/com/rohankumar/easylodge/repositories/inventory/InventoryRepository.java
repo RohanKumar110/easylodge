@@ -1,6 +1,7 @@
 package com.rohankumar.easylodge.repositories.inventory;
 
 import com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse;
+import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.entities.hotel.Hotel;
 import com.rohankumar.easylodge.entities.inventory.Inventory;
 import com.rohankumar.easylodge.entities.room.Room;
@@ -25,14 +26,19 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     int deleteByRoom(Room room);
 
     @Query("""
-        SELECT new com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse(i.hotel, MIN(i.price))
+        SELECT new com.rohankumar.easylodge.dtos.hotel.price.HotelPriceResponse(
+            i.hotel,
+            MIN(i.price)
+        )
         FROM Inventory i
         WHERE i.city = :city
-          AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
+          AND i.inventoryDate >= :startDate
+          AND i.inventoryDate < :endDate
           AND (i.totalRoomsCount - i.bookedCount - i.reservedCount) >= :roomsCount
           AND i.closed = FALSE
-        GROUP BY i.hotel, i.room
-        HAVING COUNT(i.inventoryDate) = :requiredNights
+          AND i.hotel.active = TRUE
+        GROUP BY i.hotel
+        HAVING COUNT(DISTINCT i.inventoryDate) = :requiredNights
     """)
     Page<HotelPriceResponse> searchHotelsWithAvailableInventory(
             String city,
@@ -41,6 +47,35 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
             Integer roomsCount,
             Long requiredNights,
             Pageable pageable
+    );
+
+    @Query("""
+        SELECT new com.rohankumar.easylodge.dtos.room.RoomResponse(
+            r.id,
+            r.type,
+            MIN(i.price),
+            r.images,
+            r.amenities,
+            r.totalRoomsCount,
+            r.capacity
+        )
+        FROM Inventory i
+        JOIN i.room r
+        WHERE i.hotel.id = :hotelId
+          AND i.inventoryDate >= :startDate
+          AND i.inventoryDate < :endDate
+          AND (i.totalRoomsCount - i.bookedCount - i.reservedCount) >= :roomsCount
+          AND i.closed = FALSE
+          AND i.hotel.active = TRUE
+        GROUP BY r.id, r.type, r.images, r.amenities, r.totalRoomsCount, r.capacity
+        HAVING COUNT(DISTINCT i.inventoryDate) = :requiredNights
+    """)
+    List<RoomResponse> findAvailableRoomsByHotelId(
+            UUID hotelId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer roomsCount,
+            Long requiredNights
     );
 
     @Modifying

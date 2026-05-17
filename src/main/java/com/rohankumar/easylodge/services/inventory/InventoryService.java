@@ -5,11 +5,13 @@ import com.rohankumar.easylodge.dtos.hotel.search.HotelSearchRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryFilterRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryRequest;
 import com.rohankumar.easylodge.dtos.inventory.InventoryResponse;
+import com.rohankumar.easylodge.dtos.room.RoomResponse;
 import com.rohankumar.easylodge.dtos.wrapper.PaginationResponse;
 import com.rohankumar.easylodge.entities.room.Room;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface InventoryService {
@@ -19,6 +21,9 @@ public interface InventoryService {
     PaginationResponse<InventoryResponse> getAllInventoriesByRoom(UUID roomId, InventoryFilterRequest inventoryFilterRequest);
 
     PaginationResponse<HotelPriceResponse> searchHotels(HotelSearchRequest searchRequest);
+
+    List<RoomResponse> findAvailableRoomsByHotel(
+            UUID hotelId, LocalDate startDate, LocalDate endDate, Integer roomsCount);
 
     void changeInventoryAvailabilityByHotel(UUID hotelId, boolean closed);
 
