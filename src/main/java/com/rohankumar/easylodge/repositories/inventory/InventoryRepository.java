@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -135,19 +136,34 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     );
 
     @Query("""
-        SELECT i
-        FROM Inventory i
-        WHERE i.room = :room
-             AND (i.inventoryDate >= :startDate AND i.inventoryDate < :endDate)
-             AND (i.totalRoomsCount - i.bookedCount) >= :roomsCount
-             AND i.closed = FALSE
-    """)
+    SELECT i
+    FROM Inventory i
+    WHERE i.room = :room
+         AND i.inventoryDate >= :startDate
+         AND i.inventoryDate < :endDate
+""")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Inventory> lockBookedOrReservedInventory(
             Room room,
             LocalDate startDate,
             LocalDate endDate,
             Integer roomsCount
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE Inventory i
+        SET i.reservedCount = i.reservedCount - :roomsCount
+        WHERE i.room = :room
+          AND i.inventoryDate >= :startDate
+          AND i.inventoryDate < :endDate
+          AND i.reservedCount >= :roomsCount
+    """)
+    void releaseReservedInventory(
+            @Param("room") Room room,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("roomsCount") Integer roomsCount
     );
 
     @Query("""

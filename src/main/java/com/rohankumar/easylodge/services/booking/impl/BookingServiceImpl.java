@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -74,6 +75,48 @@ public class BookingServiceImpl implements BookingService {
         Room fetchedRoom = roomRepository.findById(bookingRequest.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + bookingRequest.getRoomId()));
 
+        User currentUser = SecurityUtils.getCurrentUser();
+        Optional<Booking> existingBooking =
+                bookingRepository.findExistingReservedBooking(
+                        currentUser,
+                        fetchedHotel,
+                        fetchedRoom,
+                        bookingRequest.getCheckInDate(),
+                        bookingRequest.getCheckOutDate(),
+                        bookingRequest.getNumberOfRooms(),
+                        BookingStatus.RESERVED
+                );
+
+        if (existingBooking.isPresent()) {
+
+            Booking booking = existingBooking.get();
+            if (!hasBookingExpired(booking)) {
+
+                log.info("Returning existing reserved booking with id: {}", booking.getId());
+                return BookingMapper.toResponse(booking);
+            }
+
+            log.info("Existing booking expired. Releasing inventory for booking: {}", booking.getId());
+
+            Room room = booking.getRoom();
+            inventoryRepository.lockBookedOrReservedInventory(
+                    room,
+                    booking.getCheckInDate(),
+                    booking.getCheckOutDate(),
+                    booking.getNumberOfRooms()
+            );
+
+            inventoryRepository.releaseReservedInventory(
+                    room,
+                    booking.getCheckInDate(),
+                    booking.getCheckOutDate(),
+                    booking.getNumberOfRooms()
+            );
+
+            booking.setStatus(BookingStatus.EXPIRED);
+            bookingRepository.saveAndFlush(booking);
+        }
+
         List<Inventory> inventories = inventoryRepository.findAndLockAvailableInventory(
                 fetchedRoom, bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate(), bookingRequest.getNumberOfRooms());
 
@@ -93,10 +136,10 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = Booking.builder()
                 .status(BookingStatus.RESERVED)
-                .amount(totalPrice.setScale(2, RoundingMode.CEILING))
+                .amount(totalPrice.setScale(2, RoundingMode.HALF_UP))
                 .hotel(fetchedHotel)
                 .room(fetchedRoom)
-                .user(SecurityUtils.getCurrentUser())
+                .user(currentUser)
                 .numberOfRooms(bookingRequest.getNumberOfRooms())
                 .checkInDate(bookingRequest.getCheckInDate())
                 .checkOutDate(bookingRequest.getCheckOutDate())
