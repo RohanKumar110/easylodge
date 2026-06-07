@@ -378,20 +378,34 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public void deleteGuest(UUID id, UUID guestId) {
+    public BookingResponse deleteGuests(UUID id, List<UUID> guestIds) {
 
-        log.info("Deleting guest: {} for booking with id: {}", guestId, id);
+        log.info("Deleting {} guests for booking with id: {}", guestIds.size(), id);
 
-        log.info("Finding guest with id: {}", guestId);
+        log.info("Finding booking with id: {}", id);
         Booking fetchedBooking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
         log.info("Booking found with id: {}", fetchedBooking.getId());
 
-        log.info("Finding guest with id: {}", guestId);
-        Guest fetchedGuest = guestRepository.findById(guestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
+        if(hasBookingExpired(fetchedBooking)) {
+            throw new BadRequestException("Booking has already expired");
+        }
 
-        guestRepository.delete(fetchedGuest);
-        log.info("Guest deleted successfully with id: {}", fetchedGuest.getId());
+        for (UUID guestId : guestIds) {
+
+            log.info("Finding guest with id: {}", guestId);
+            Guest fetchedGuest = guestRepository.findById(guestId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
+
+            if (!fetchedBooking.getGuests().remove(fetchedGuest)) {
+                throw new BadRequestException("Guest with id " + guestId + " does not belong to booking with id " + id);
+            }
+        }
+
+        Booking savedBooking = bookingRepository.save(fetchedBooking);
+        log.info("Guests deleted successfully for booking id: {}", id);
+
+        return BookingMapper.toResponse(savedBooking);
     }
 }

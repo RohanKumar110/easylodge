@@ -100,13 +100,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (StringUtils.isBlank(refreshToken)) {
             log.warn("Refresh token is missing");
-            throw new BadRequestException("Invalid refresh token");
+            throw new UnAuthorisedException("Invalid refresh token");
         }
 
         String userEmail = jwtService.extractUsername(refreshToken);
         if (StringUtils.isBlank(userEmail)) {
             log.warn("Token does not contain a valid email");
-            throw new BadRequestException("Invalid refresh token");
+            throw new UnAuthorisedException("Invalid refresh token");
         }
 
         User user = userRepository.findByEmail(userEmail)

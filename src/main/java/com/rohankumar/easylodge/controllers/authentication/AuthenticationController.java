@@ -91,7 +91,7 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("None")
-                .path("/")
+                .path("/api/v1/auth/refresh")
                 .maxAge(0)
                 .build();
 

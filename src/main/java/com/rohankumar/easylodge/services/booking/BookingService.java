@@ -30,5 +30,5 @@ public interface BookingService {
 
     boolean hasBookingExpired(Booking id);
 
-    void deleteGuest(UUID id, UUID guestId);
+    BookingResponse deleteGuests(UUID id, List<UUID> guestIds);
 }

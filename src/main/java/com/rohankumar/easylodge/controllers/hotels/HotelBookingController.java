@@ -72,13 +72,13 @@ public class HotelBookingController {
                 ApiResponse.success(HttpStatus.OK.value(), "Hotel Status Fetched Successfully",  bookingStatusResponse));
     }
 
-    @DeleteMapping("/{bookingId}/guests/{guestId}")
-    public ResponseEntity<ApiResponse<Void>> deleteGuest(
-            @PathVariable UUID bookingId, @PathVariable UUID guestId) {
+    @DeleteMapping("/{bookingId}/guests")
+    public ResponseEntity<ApiResponse<BookingResponse>> deleteGuests(
+            @PathVariable UUID bookingId, @RequestBody List<UUID> guestIds) {
 
         log.info("Attempting to delete guests for booking: {}", bookingId);
-        bookingService.deleteGuest(bookingId, guestId);
+        BookingResponse bookingResponse = bookingService.deleteGuests(bookingId, guestIds);
         return ResponseEntity.status(HttpStatus.OK).body(
-                ApiResponse.success(HttpStatus.NO_CONTENT.value(), "Guest Deleted Successfully"));
+                ApiResponse.success(HttpStatus.NO_CONTENT.value(), "Guests Deleted Successfully", bookingResponse));
     }
 }

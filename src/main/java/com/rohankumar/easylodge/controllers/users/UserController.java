@@ -70,7 +70,7 @@ public class UserController {
         log.info("Attempting to get current user guests");
         List<GuestResponse> guestResponseList = guestService.getAllGuests();
         return ResponseEntity.status(HttpStatus.OK).body(
-                ApiResponse.success(HttpStatus.OK.value(), "Guests Created Successfully", guestResponseList));
+                ApiResponse.success(HttpStatus.OK.value(), "Guests Fetched Successfully", guestResponseList));
     }
 
     @PutMapping("guests/{guestId}")
