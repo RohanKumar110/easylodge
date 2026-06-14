@@ -21,14 +21,11 @@ public class UserProfileRequest {
     @Size(min = 3, message = "Name must be at least 3 characters long")
     private String name;
 
-    @NotNull(message = "Gender is required")
     private Gender gender;
 
-    @NotNull(message = "Date of birth is required")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
-    @NotBlank(message = "Contact is required")
     private String contactNumber;
 
     private String profilePicture;

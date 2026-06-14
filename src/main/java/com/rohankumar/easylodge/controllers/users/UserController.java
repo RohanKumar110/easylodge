@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @PatchMapping("/profile")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid UserProfileRequest profileRequest) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid @RequestBody UserProfileRequest profileRequest) {
 
         log.info("Attempting to update current user profile");
         UserResponse userResponse = userService.updateUserProfile(profileRequest);

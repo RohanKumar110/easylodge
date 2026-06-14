@@ -243,7 +243,6 @@ public class BookingServiceImpl implements BookingService {
         Booking fetchedBooking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
 
-        User currentUser = SecurityUtils.getCurrentUser();
         if(hasBookingExpired(fetchedBooking)) {
             log.warn("Booking has expired");
             throw new BadRequestException("Booking has already expired");
@@ -251,8 +250,8 @@ public class BookingServiceImpl implements BookingService {
 
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setBooking(fetchedBooking);
-        paymentRequest.setSuccessUrl(frontendAppUrl+"/payment/success");
-        paymentRequest.setFailureUrl(frontendAppUrl+"/payment/failure");
+        paymentRequest.setSuccessUrl(frontendAppUrl+"/payments/"+ id + "/status");
+        paymentRequest.setFailureUrl(frontendAppUrl+"/payments/" + id + "/status");
 
         log.info("Creating Stripe session for booking: {}", id);
         String sessionUrl = paymentService.getSession(paymentRequest);

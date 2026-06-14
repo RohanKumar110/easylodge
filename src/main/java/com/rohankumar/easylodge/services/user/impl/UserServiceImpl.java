@@ -50,14 +50,19 @@ public class UserServiceImpl implements UserService {
 
         log.info("Updating user profile with id {}", currentUser.getId());
 
-
         currentUser.setName(profileRequest.getName());
-        currentUser.setGender(profileRequest.getGender());
-        currentUser.setDateOfBirth(profileRequest.getDateOfBirth());
-        currentUser.setContactNumber(currentUser.getContactNumber());
+
+        if(profileRequest.getGender() != null)
+            currentUser.setGender(profileRequest.getGender());
+
+        if(profileRequest.getDateOfBirth() != null)
+            currentUser.setDateOfBirth(profileRequest.getDateOfBirth());
+
+        if(profileRequest.getContactNumber() != null)
+            currentUser.setContactNumber(profileRequest.getContactNumber());
 
         if(profileRequest.getProfilePicture() != null)
-            currentUser.setProfilePicture(currentUser.getProfilePicture().trim());
+            currentUser.setProfilePicture(profileRequest.getProfilePicture().trim());
 
         User updatedUser = userRepository.save(currentUser);
         log.info("User updated successfully with id {}", updatedUser.getId());
