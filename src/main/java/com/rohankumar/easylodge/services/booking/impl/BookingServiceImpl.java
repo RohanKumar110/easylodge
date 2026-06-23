@@ -220,6 +220,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponse> getUserBookings() {
 
         User currentUser = SecurityUtils.getCurrentUser();

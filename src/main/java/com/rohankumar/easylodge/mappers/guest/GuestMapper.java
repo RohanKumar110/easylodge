@@ -13,7 +13,7 @@ public class GuestMapper {
         return Guest.builder()
                 .name(request.getName())
                 .gender(request.getGender())
-                .age(request.getAge())
+                .dateOfBirth(request.getDateOfBirth())
                 .build();
     }
 
@@ -25,7 +25,7 @@ public class GuestMapper {
                 .id(guest.getId())
                 .name(guest.getName())
                 .gender(guest.getGender())
-                .age(guest.getAge())
+                .dateOfBirth(guest.getDateOfBirth())
                 .build();
     }
 }

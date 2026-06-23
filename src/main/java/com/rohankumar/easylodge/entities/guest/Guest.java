@@ -6,6 +6,8 @@ import com.rohankumar.easylodge.enums.gender.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -29,7 +31,7 @@ public class Guest extends DateAudit {
     @Column(nullable = false)
     private Gender gender;
 
-    private Integer age;
+    private LocalDate dateOfBirth;
 
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

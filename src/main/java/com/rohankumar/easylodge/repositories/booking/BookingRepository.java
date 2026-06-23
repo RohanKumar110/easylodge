@@ -7,6 +7,7 @@ import com.rohankumar.easylodge.entities.room.Room;
 import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;

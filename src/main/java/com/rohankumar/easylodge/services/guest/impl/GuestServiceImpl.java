@@ -90,7 +90,7 @@ public class GuestServiceImpl implements GuestService {
 
         fetchedGuest.setName(guestRequest.getName());
         fetchedGuest.setGender(guestRequest.getGender());
-        fetchedGuest.setAge(guestRequest.getAge());
+        fetchedGuest.setDateOfBirth(guestRequest.getDateOfBirth());
 
         log.info("Saving the guest");
         Guest savedGuest = guestRepository.save(fetchedGuest);
