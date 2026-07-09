@@ -206,10 +206,10 @@ public class BookingServiceImpl implements BookingService {
 
         log.info("Getting all bookings for hotel with id: {}", hotelId);
 
-        Hotel fetchedHotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
+        if(!hotelRepository.existsById(hotelId))
+            throw new ResourceNotFoundException("Hotel not found with id: " + hotelId);
 
-        List<Booking> bookings = bookingRepository.findByHotel(fetchedHotel);
+        List<Booking> bookings = bookingRepository.findByHotelIdWithDetails(hotelId);
 
         log.info("Bookings found successfully");
         log.info("Total bookings found: {}", bookings.size());

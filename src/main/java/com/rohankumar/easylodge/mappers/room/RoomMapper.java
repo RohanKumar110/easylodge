@@ -28,7 +28,7 @@ public class RoomMapper {
         return RoomResponse.builder()
                 .id(room.getId())
                 .type(room.getType())
-                .price(room.getBasePrice())
+                .basePrice(room.getBasePrice())
                 .images(room.getImages())
                 .amenities(room.getAmenities())
                 .totalRoomsCount(room.getTotalRoomsCount())

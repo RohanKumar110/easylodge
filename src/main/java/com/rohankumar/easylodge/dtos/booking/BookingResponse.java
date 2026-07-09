@@ -8,6 +8,7 @@ import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,4 +29,6 @@ public class BookingResponse {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private List<GuestResponse> guests;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

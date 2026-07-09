@@ -41,7 +41,7 @@ public class HotelServiceImpl implements HotelService {
         log.info("Creating the hotel with name: {}", hotelRequest.getName());
 
         Hotel hotelToSave = HotelMapper.toEntity(hotelRequest);
-        hotelToSave.setActive(true);
+        hotelToSave.setActive(false);
 
         hotelToSave.setOwner(SecurityUtils.getCurrentUser());
         Hotel savedHotel = hotelRepository.save(hotelToSave);
@@ -95,19 +95,23 @@ public class HotelServiceImpl implements HotelService {
 
         if (startDate == null) {
 
-            log.info("Start date is null. Defaulting to a 30-day report ending on {}.", endDate);
-
             startDate = LocalDate.now().minusMonths(1);
+            log.info("Start date is null. Defaulting to a 30-day report ending on {}.", endDate);
+        }
+
+        if(endDate == null) {
+
             endDate = LocalDate.now();
+            log.info("End date is null. Defaulting to today's date: {}", endDate);
         }
 
         log.info("Generating report from {} to {}.", startDate, endDate);
 
         log.info("Getting the hotel");
-        Hotel fetchedHotel = hotelRepository.findHotelWithRoomsById(id)
+        Hotel fetchedHotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + id));
 
-        LocalDateTime startDateTime = startDate.atTime(LocalTime.MIN);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
         log.info("Getting the hotel report");

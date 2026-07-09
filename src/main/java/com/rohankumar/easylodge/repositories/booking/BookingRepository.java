@@ -29,6 +29,12 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     List<Booking> findByUser(User user);
 
+    @Query("SELECT DISTINCT b FROM Booking b " +
+            "JOIN FETCH b.room JOIN FETCH b.user JOIN FETCH b.hotel " +
+            "LEFT JOIN FETCH b.guests " +
+            "WHERE b.hotel.id = :hotelId")
+    List<Booking> findByHotelIdWithDetails(UUID hotelId);
+
     @Query("""
         SELECT new com.rohankumar.easylodge.dtos.hotel.report.HotelReportResponse(COUNT(b), SUM(b.amount), AVG(b.amount))
         FROM Booking b

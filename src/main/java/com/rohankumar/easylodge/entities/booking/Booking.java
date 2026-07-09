@@ -8,6 +8,7 @@ import com.rohankumar.easylodge.entities.user.User;
 import com.rohankumar.easylodge.enums.booking.BookingStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.UuidGenerator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,6 +61,7 @@ public class Booking extends DateAudit {
     @Column(unique = true)
     private String sessionId;
 
+    @BatchSize(size = 25)
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "booking_guests",

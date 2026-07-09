@@ -23,7 +23,7 @@ public class HotelRequest {
     private String[] images;
 
     @NotNull(message = "Amenities are required")
-    @Size(max = 10, message = "You can upload up to 20 amenities")
+    @Size(max = 10, message = "You can upload up to 10 amenities")
     private String[] amenities;
 
     @NotBlank(message = "Email is required")

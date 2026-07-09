@@ -14,10 +14,10 @@ public class HotelReportResponse {
     private BigDecimal totalRevenue;
     private BigDecimal avgRevenue;
 
-    public HotelReportResponse(Long bookingCount, BigDecimal totalRevenue, double avgRevenue) {
+    public HotelReportResponse(Long bookingCount, BigDecimal totalRevenue, Double avgRevenue) {
 
-        this.bookingCount = bookingCount;
-        this.totalRevenue = totalRevenue;
-        this.avgRevenue = BigDecimal.valueOf(avgRevenue);
+        this.bookingCount = bookingCount != null ? bookingCount : 0L;
+        this.totalRevenue = totalRevenue != null ? totalRevenue : BigDecimal.ZERO;
+        this.avgRevenue = avgRevenue != null ? BigDecimal.valueOf(avgRevenue) : BigDecimal.ZERO;
     }
 }

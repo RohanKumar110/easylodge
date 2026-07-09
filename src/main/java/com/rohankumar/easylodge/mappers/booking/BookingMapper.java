@@ -37,6 +37,8 @@ public class BookingMapper {
                 .amount(booking.getAmount())
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
+                .createdAt(booking.getCreatedAt())
+                .updatedAt(booking.getUpdatedAt())
                 .guests(booking.getGuests() != null ?
                         booking.getGuests().stream().map(GuestMapper::toResponse).collect(Collectors.toList()) : null)
                 .build();
