@@ -34,7 +34,7 @@ public class InventoryController {
                 ApiResponse.success(HttpStatus.OK.value(), "Inventories Fetched Successfully", paginationResponse));
     }
 
-    @PutMapping("/rooms/{roomId}")
+    @PatchMapping("/rooms/{roomId}")
     public ResponseEntity<ApiResponse<Void>> updateInventoriesByRoom(
             @PathVariable UUID roomId,
             @Valid @RequestBody InventoryRequest inventoryRequest) {
